@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IMS - User Registration</title>
+</head>
+<body>
+    <h2>Inventory Management System</h2>
+    <h3>Register New User</h3>
+
+    <form action="/register" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Full Name:</label>
+        <input type="text" name="name" required>
+        <br><br>
+
+        <label>Email:</label>
+        <input type="email" name="email" required>
+        <br><br>
+
+        <label>Password:</label>
+        <input type="password" name="password"
+               minlength="12" required>
+        <br><br>
+
+        
+        
+<label for="role">User Role:</label>
+<select id="role" name="role" required>
+    <option value="">-- Select Role --</option>
+    {% for role in allowed_roles %}
+        <option value="{{ role }}">
+            {{ role.replace("_", " ").title() }}
+        </option>
+    {% endfor %}
+</select>
+
+        <br><br>
+
+        <button type="submit">Register User</button>
+    </form>
+</body>
+</html>
