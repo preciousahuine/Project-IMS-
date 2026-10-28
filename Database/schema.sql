@@ -1,0 +1,19 @@
+
+CREATE DATABASE IF NOT EXISTS ims_db;
+
+USE ims_db;
+
+CREATE TABLE IF NOT EXISTS users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM(
+        'OWNER',
+        'MANAGER',
+        'SALES_PERSONNEL',
+        'STOREKEEPER'
+    ) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
