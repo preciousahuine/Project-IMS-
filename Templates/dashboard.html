@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>IMS Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+        }
+
+        header {
+            background: #17365d;
+            color: white;
+            padding: 20px 35px;
+        }
+
+        main {
+            padding: 30px;
+        }
+
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            width: 210px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #ddd;
+        }
+
+        .card a {
+            display: inline-block;
+            background: #17365d;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .disabled {
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <p style="color: green; font-weight: bold;">
+                {{ message }}
+            </p>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+
+<header>
+    <h1>Inventory Management System</h1>
+    <p>Manager Dashboard</p>
+</header>
+
+<main>
+    <h2>Welcome, {{ session.get("user_name") }}!</h2>
+    <p>Role: {{ session.get("role") }}</p>
+
+    <h3>Inventory Management</h3>
+
+    <div class="cards">
+
+        {% if session.get("role") in
+           ["OWNER", "MANAGER", "STOREKEEPER"] %}
+
+        <div class="card">
+            <h3>Add New Product</h3>
+            <p>Register products in inventory.</p>
+            <a href="{{ url_for('add_product') }}">
+                Add Product
+            </a>
+        </div>
+
+        {% endif %}
+
+        <div class="card">
+            <h3>Search Products</h3>
+            <p>Find products in inventory.</p>
+            <p class="disabled">Coming Soon</p>
+        </div>
+
+        <div class="card">
+            <h3>Sales Management</h3>
+            <p>Record product sales.</p>
+            <p class="disabled">Coming Soon</p>
+        </div>
+
+        <div class="card">
+            <h3>Inventory Reports</h3>
+            <p>View stock and sales reports.</p>
+            <p class="disabled">Coming Soon</p>
+        </div>
+
+    </div>
+</main>
+
+</body>
+</html>
