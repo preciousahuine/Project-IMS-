@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>Add Products - IMS</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 30px;
+        }
+
+        .product-card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-width: 600px;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+        }
+
+        input, textarea {
+            width: 95%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Inventory Management System</h2>
+    <h3>Add New Products</h3>
+
+    
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            {% if category == 'error' %}
+                <p style="color: red; font-weight: bold;">
+                    {{ message }}
+                </p>
+            {% else %}
+                <p style="color: green; font-weight: bold;">
+                    {{ message }}
+                </p>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+
+    <form action="{{ url_for('add_product') }}"
+          method="POST">
+
+        <input type="hidden"
+               name="csrf_token"
+               value="{{ csrf_token() }}">
+
+        <div id="products-container">
+
+            <div class="product-card">
+                <h3>Product 1</h3>
+
+                <label>Product Name:</label>
+                <input type="text"
+                       name="product_name"
+                       required>
+
+                <label>SKU:</label>
+                <input type="text"
+                       name="sku"
+                       required>
+
+                <label>Category:</label>
+                <input type="text"
+                       name="category">
+
+                <label>Description:</label>
+                <textarea name="description"></textarea>
+
+                <label>Unit Price ($):</label>
+                <input type="number"
+                       name="unit_price"
+                       min="0"
+                       step="0.01"
+                       required>
+
+                <label>Initial Quantity:</label>
+                <input type="number"
+                       name="quantity_in_stock"
+                       min="0"
+                       step="1"
+                       value="0"
+                       required>
+
+                <label>Reorder Level:</label>
+                <input type="number"
+                       name="reorder_level"
+                       min="0"
+                       step="1"
+                       value="5"
+                       required>
+            </div>
+
+        </div>
+
+        <button type="button"
+                onclick="addAnotherProduct()">
+            + Add Another Product
+        </button>
+
+        <button type="submit"
+                name="save_action"
+                value="continue">
+            Save & Continue
+        </button>
+
+        <button type="submit"
+                name="save_action"
+                value="finish">
+            Save Products
+        </button>
+
+    </form>
+
+    
+<p>
+    <a href="{{ url_for('dashboard') }}"
+       style="
+           display: inline-block;
+           padding: 12px 20px;
+           background-color: #17365d;
+           color: white;
+           text-decoration: none;
+           border-radius: 5px;
+       ">
+        Back to Dashboard
+    </a>
+</p>
+
+    <script>
+        let productCount = 1;
+
+        function addAnotherProduct() {
+            productCount++;
+
+            const container =
+                document.getElementById("products-container");
+
+            const firstCard =
+                container.querySelector(".product-card");
+
+            const newCard = firstCard.cloneNode(true);
+
+            newCard.querySelector("h3").textContent =
+                "Product " + productCount;
+
+            newCard.querySelectorAll(
+                "input, textarea"
+            ).forEach(field => {
+                if (field.name === "quantity_in_stock") {
+                    field.value = "0";
+                } else if (field.name === "reorder_level") {
+                    field.value = "5";
+                } else {
+                    field.value = "";
+                }
+            });
+
+            const removeButton =
+                document.createElement("button");
+
+            removeButton.type = "button";
+            removeButton.textContent = "Remove Product";
+
+            removeButton.onclick = function () {
+                newCard.remove();
+            };
+
+            newCard.appendChild(removeButton);
+            container.appendChild(newCard);
+        }
+    </script>
+
+</body>
+</html>
