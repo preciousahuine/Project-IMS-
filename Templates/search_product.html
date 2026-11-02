@@ -126,6 +126,19 @@
         .navigation {
             margin-top: 25px;
         }
+        .edit-btn {
+    display: inline-block;
+    background: #19375b;
+    color: white;
+    padding: 9px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.edit-btn:hover {
+    background: #365d89;
+}
     </style>
 </head>
 
@@ -174,6 +187,7 @@
                         <th>Unit Price</th>
                         <th>Quantity</th>
                         <th>Stock Status</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
 
@@ -204,6 +218,16 @@
                                 </span>
                             {% endif %}
                         </td>
+
+<td>
+    {% if session.get("role") in ["OWNER", "MANAGER", "STOREKEEPER"] %}
+        <a href="{{ url_for('edit_product', product_id=product.product_id) }}"
+           class="edit-btn">
+            ✏️ Edit
+        </a>
+    {% endif %}
+</td>
+
                     </tr>
                     {% else %}
                     <tr>
