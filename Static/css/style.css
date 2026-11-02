@@ -1,0 +1,93 @@
+
+
+:root {
+    --navy: #19375b;
+    --blue: #294f7d;
+    --background: #f3f6fa;
+    --white: #ffffff;
+    --text: #263548;
+    --green: #20845b;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: var(--background);
+    color: var(--text);
+}
+
+header {
+    background: var(--navy);
+    color: white;
+    padding: 25px 35px;
+}
+
+header h1 {
+    margin: 0 0 10px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+button, .btn {
+    display: inline-block;
+    background: var(--navy);
+    color: white;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+button:hover, .btn:hover {
+    background: var(--blue);
+}
+
+input, select, textarea {
+    padding: 10px;
+    border: 1px solid #ccd5df;
+    border-radius: 6px;
+    max-width: 100%;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: 2px solid #7ba4d4;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+}
+
+th {
+    background: var(--navy);
+    color: white;
+}

@@ -1,0 +1,229 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Products | IMS</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        body {
+            margin: 0;
+            background: #f3f6fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .page-header {
+            background: #19375b;
+            color: white;
+            padding: 25px 35px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .search-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-form input {
+            flex: 1;
+            min-width: 200px;
+            padding: 13px;
+            border: 1px solid #ccd5df;
+            border-radius: 6px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #19375b;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #365d89;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #19375b;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:hover td {
+            background: #f8fafc;
+        }
+
+        .stock-good {
+            color: #20845b;
+            font-weight: bold;
+        }
+
+        .stock-low {
+            color: #c2410c;
+            font-weight: bold;
+        }
+
+        .stock-out {
+            color: #b91c1c;
+            font-weight: bold;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 35px;
+            color: #64748b;
+        }
+
+        .navigation {
+            margin-top: 25px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="page-header">
+        <h1>Inventory Management System</h1>
+        <p>Product Search & Inventory</p>
+    </header>
+
+    <main class="container">
+
+        <div class="search-card">
+            <h2>🔎 Search Products</h2>
+            <p>Search inventory by product name, SKU, or category.</p>
+
+            <form class="search-form"
+                  action="{{ url_for('search_product') }}"
+                  method="GET">
+
+                <input type="search"
+                       name="q"
+                       placeholder="Enter product name, SKU, or category"
+                       value="{{ search_query }}"
+                       aria-label="Search products">
+
+                <button type="submit" class="btn">
+                    Search
+                </button>
+
+                <a href="{{ url_for('search_product') }}"
+                   class="btn btn-secondary">
+                    Show All
+                </a>
+            </form>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product ID</th>
+                        <th>Product Name</th>
+                        <th>SKU</th>
+                        <th>Category</th>
+                        <th>Unit Price</th>
+                        <th>Quantity</th>
+                        <th>Stock Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>{{ product.product_id }}</td>
+                        <td>{{ product.product_name }}</td>
+                        <td>{{ product.sku }}</td>
+                        <td>{{ product.category or "N/A" }}</td>
+                        <td>
+                            ${{ "%.2f"|format(product.unit_price) }}
+                        </td>
+                        <td>{{ product.quantity_in_stock }}</td>
+
+                        <td>
+                            {% if product.quantity_in_stock == 0 %}
+                                <span class="stock-out">
+                                    Out of Stock
+                                </span>
+                            {% elif product.quantity_in_stock <= product.reorder_level %}
+                                <span class="stock-low">
+                                    Low Stock
+                                </span>
+                            {% else %}
+                                <span class="stock-good">
+                                    In Stock
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="empty-message">
+                            No products found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="navigation">
+            <a href="{{ url_for('dashboard') }}"
+               class="btn">
+                ← Back to Dashboard
+            </a>
+        </div>
+
+    </main>
+
+</body>
+</html>

@@ -3,113 +3,310 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title>IMS Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMS | Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
             margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fa;
+            color: #263548;
         }
 
-        header {
-            background: #17365d;
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 245px;
+            background: #19375b;
             color: white;
-            padding: 20px 35px;
+            padding: 25px 18px;
+            flex-shrink: 0;
         }
 
-        main {
-            padding: 30px;
+        .brand {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .brand-subtitle {
+            font-size: 12px;
+            color: #c5d6e8;
+            margin-bottom: 35px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            color: #e6eef8;
+            text-decoration: none;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #365d89;
+            color: white;
+        }
+
+        .nav-link.disabled {
+            opacity: 0.55;
+            cursor: default;
+        }
+
+        .nav-icon {
+            width: 22px;
+            text-align: center;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .topbar {
+            background: white;
+            padding: 22px 35px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .topbar h1 {
+            font-size: 24px;
+            margin: 0 0 8px;
+            color: #19375b;
+        }
+
+        .content {
+            padding: 30px 35px;
+        }
+
+        .welcome {
+            background: linear-gradient(120deg, #19375b, #365d89);
+            color: white;
+            padding: 28px;
+            border-radius: 12px;
+            margin-bottom: 28px;
+        }
+
+        .welcome h2 {
+            margin-top: 0;
+        }
+
+        .welcome p {
+            color: #e6eef8;
+        }
+
+        .section-title {
+            margin-bottom: 18px;
+            color: #19375b;
         }
 
         .cards {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
             gap: 20px;
         }
 
-        .card {
+        .feature-card {
             background: white;
+            border-radius: 12px;
             padding: 25px;
-            width: 210px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px #ddd;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+            border: 1px solid #e5ebf2;
         }
 
-        .card a {
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h3 {
+            color: #19375b;
+            margin: 0 0 12px;
+        }
+
+        .feature-card p {
+            color: #64748b;
+            min-height: 42px;
+        }
+
+        .feature-card .btn {
             display: inline-block;
-            background: #17365d;
+            padding: 11px 17px;
+            background: #19375b;
             color: white;
-            padding: 10px 15px;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 6px;
         }
 
-        .disabled {
-            color: #777;
+        .feature-card .btn:hover {
+            background: #365d89;
+        }
+
+        .coming-soon {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .alert {
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            background: #e7f6ed;
+            border-left: 4px solid #20845b;
+            border-radius: 6px;
+        }
+
+        @media (max-width: 700px) {
+            .layout {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .topbar,
+            .content {
+                padding: 20px;
+            }
         }
     </style>
 </head>
+
 <body>
+<div class="layout">
 
-{% with messages = get_flashed_messages() %}
-    {% if messages %}
-        {% for message in messages %}
-            <p style="color: green; font-weight: bold;">
-                {{ message }}
-            </p>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="brand">📦 IMS</div>
+        <div class="brand-subtitle">
+            Inventory Management System
+        </div>
 
+        <nav aria-label="Main navigation">
+            <a class="nav-link active"
+               href="{{ url_for('dashboard') }}">
+                <span class="nav-icon">▦</span>
+                Dashboard
+            </a>
 
-<header>
-    <h1>Inventory Management System</h1>
-    <p>Manager Dashboard</p>
-</header>
-
-<main>
-    <h2>Welcome, {{ session.get("user_name") }}!</h2>
-    <p>Role: {{ session.get("role") }}</p>
-
-    <h3>Inventory Management</h3>
-
-    <div class="cards">
-
-        {% if session.get("role") in
-           ["OWNER", "MANAGER", "STOREKEEPER"] %}
-
-        <div class="card">
-            <h3>Add New Product</h3>
-            <p>Register products in inventory.</p>
-            <a href="{{ url_for('add_product') }}">
+            {% if session.get("role") in
+               ["OWNER", "MANAGER", "STOREKEEPER"] %}
+            <a class="nav-link"
+               href="{{ url_for('add_product') }}">
+                <span class="nav-icon">＋</span>
                 Add Product
             </a>
+            {% endif %}
+
+            <a class="nav-link"
+   href="{{ url_for('search_product') }}">
+    <span class="nav-icon">⌕</span>
+    Search Products
+</a>
+
+            <span class="nav-link disabled">
+                <span class="nav-icon">🛒</span>
+                Sales
+            </span>
+
+            <span class="nav-link disabled">
+                <span class="nav-icon">▤</span>
+                Reports
+            </span>
+        </nav>
+    </aside>
+
+    <!-- MAIN AREA -->
+    <div class="main-content">
+
+        <div class="topbar">
+            <h1>Inventory Management System</h1>
+            <div>Manager Dashboard</div>
         </div>
 
-        {% endif %}
+        <main class="content">
 
-        <div class="card">
-            <h3>Search Products</h3>
-            <p>Find products in inventory.</p>
-            <p class="disabled">Coming Soon</p>
-        </div>
+            <!-- SUCCESS MESSAGES -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-        <div class="card">
-            <h3>Sales Management</h3>
-            <p>Record product sales.</p>
-            <p class="disabled">Coming Soon</p>
-        </div>
+            <!-- WELCOME -->
+            <section class="welcome">
+                <h2>
+                    Welcome, {{ session.get("user_name", "User") }}!
+                </h2>
+                <p>
+                    Role: {{ session.get("role", "Unknown") }}
+                </p>
+                <p>
+                    Manage your inventory, monitor products,
+                    and track your business operations.
+                </p>
+            </section>
 
-        <div class="card">
-            <h3>Inventory Reports</h3>
-            <p>View stock and sales reports.</p>
-            <p class="disabled">Coming Soon</p>
-        </div>
+            <!-- FEATURES -->
+            <h2 class="section-title">Inventory Management</h2>
 
+            <div class="cards">
+
+                {% if session.get("role") in
+                   ["OWNER", "MANAGER", "STOREKEEPER"] %}
+                <div class="feature-card">
+                    <div class="feature-icon">📦</div>
+                    <h3>Add New Product</h3>
+                    <p>Register and manage new inventory products.</p>
+                    <a class="btn"
+                       href="{{ url_for('add_product') }}">
+                        Add Product
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔎</div>
+                    <h3>Search Products</h3>
+                    <p>Find products by name, SKU, or category.</p>
+                    <a class="btn"
+   href="{{ url_for('search_product') }}">
+    Search Products
+</a>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🛒</div>
+                    <h3>Sales Management</h3>
+                    <p>Record sales and track products sold.</p>
+                    <span class="coming-soon">Coming Soon</span>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Inventory Reports</h3>
+                    <p>View stock levels and sales performance.</p>
+                    <span class="coming-soon">Coming Soon</span>
+                </div>
+
+            </div>
+        </main>
     </div>
-</main>
-
+</div>
 </body>
 </html>
