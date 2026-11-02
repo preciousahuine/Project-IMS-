@@ -27,7 +27,13 @@ import os
 
 load_dotenv()
 
-app = Flask(__name__, template_folder="Templates")
+
+app = Flask(
+    __name__,
+    template_folder="Templates",
+    static_folder="Static"
+)
+
 
 app.secret_key = os.environ["FLASK_SECRET_KEY"]
 csrf = CSRFProtect(app)
@@ -377,6 +383,69 @@ def dashboard():
 
     return render_template("dashboard.html")
 
+
+@app.route("/products/search", methods=["GET"])
+def search_product():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    search_query = request.args.get("q", "").strip()
+    products = []
+
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        if search_query:
+            search_term = f"%{search_query}%"
+
+            cursor.execute(
+                """
+                SELECT product_id, product_name, sku,
+                       category, unit_price,
+                       quantity_in_stock, reorder_level
+                FROM products
+                WHERE is_active = TRUE
+                  AND (
+                      product_name LIKE %s
+                      OR sku LIKE %s
+                      OR category LIKE %s
+                  )
+                ORDER BY product_name
+                """,
+                (search_term, search_term, search_term)
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT product_id, product_name, sku,
+                       category, unit_price,
+                       quantity_in_stock, reorder_level
+                FROM products
+                WHERE is_active = TRUE
+                ORDER BY product_name
+                """
+            )
+
+        products = cursor.fetchall()
+
+    except mysql.connector.Error:
+        return "Unable to load products. Please try again.", 500
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
+
+    return render_template(
+        "search_product.html",
+        products=products,
+        search_query=search_query
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)
