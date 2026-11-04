@@ -585,6 +585,73 @@ def edit_product(product_id):
         if connection is not None:
             connection.close()
 
+
+@app.route("/products/<int:product_id>/delete", methods=["GET", "POST"])
+def delete_product(product_id):
+    # Check whether the user is logged in
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    # Only authorized users can delete products
+    if session.get("role") not in ["OWNER", "MANAGER", "STOREKEEPER"]:
+        return "Access denied.", 403
+
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        # Find the active product
+        cursor.execute(
+            """
+            SELECT * FROM products
+            WHERE product_id = %s AND is_active = TRUE
+            """,
+            (product_id,)
+        )
+
+        product = cursor.fetchone()
+
+        if product is None:
+            return "Product not found.", 404
+
+        # Display confirmation page
+        if request.method == "GET":
+            return render_template(
+                "delete_product.html",
+                product=product
+            )
+
+        # Soft delete the product after confirmation
+        cursor.execute(
+            """
+            UPDATE products
+            SET is_active = FALSE
+            WHERE product_id = %s AND is_active = TRUE
+            """,
+            (product_id,)
+        )
+
+        connection.commit()
+
+        flash("Product deleted successfully!", "success")
+        return redirect(url_for("search_product"))
+
+    except mysql.connector.Error:
+        if connection is not None:
+            connection.rollback()
+        return "Database error. Please try again.", 500
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+        if connection is not None:
+            connection.close()
+
+
 if __name__ == "__main__":
     app.run(debug=True)
 
