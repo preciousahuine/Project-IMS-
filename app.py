@@ -22,6 +22,9 @@ from dotenv import load_dotenv
 from flask_wtf.csrf import CSRFProtect
 import mysql.connector
 import os
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
+from email.message import EmailMessage
+import smtplib
 
 
 
@@ -196,6 +199,26 @@ def login():
                 connection.close()
 
     return render_template("login.html")
+
+
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+
+        if not email:
+            flash("Please enter your email address.", "error")
+            return redirect(url_for("forgot_password"))
+
+        # Email delivery will be implemented in the next step.
+        flash(
+            "The password reset email service is not configured yet.",
+            "info"
+        )
+        return redirect(url_for("forgot_password"))
+
+    return render_template("forgot_password.html")
+
 
 
 @app.route("/products/add", methods=["GET", "POST"])
