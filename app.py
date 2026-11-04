@@ -447,6 +447,121 @@ def search_product():
         search_query=search_query
     )
 
+@app.route("/products/<int:product_id>/edit", methods=["GET", "POST"])
+def edit_product(product_id):
+
+    # Only logged-in authorized users can edit products
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if session.get("role") not in ["OWNER", "MANAGER", "STOREKEEPER"]:
+        return "Access denied.", 403
+
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        # Retrieve the existing product
+        cursor.execute(
+            "SELECT * FROM products WHERE product_id = %s AND is_active = TRUE",
+            (product_id,)
+        )
+        product = cursor.fetchone()
+
+        if product is None:
+            return "Product not found.", 404
+
+        if request.method == "POST":
+            product_name = request.form.get("product_name", "").strip()
+            sku = request.form.get("sku", "").strip()
+            category = request.form.get("category", "").strip()
+            description = request.form.get("description", "").strip()
+
+            try:
+                unit_price = Decimal(request.form.get("unit_price", ""))
+                quantity = int(request.form.get("quantity_in_stock", ""))
+                reorder_level = int(request.form.get("reorder_level", ""))
+            except (InvalidOperation, ValueError):
+                return "Invalid price or quantity.", 400
+
+            if not product_name or not sku:
+                return "Product name and SKU are required.", 400
+
+            if (
+                not unit_price.is_finite()
+                or unit_price < 0
+                or unit_price > Decimal("99999999.99")
+                or unit_price.as_tuple().exponent < -2
+                or quantity < 0
+                or reorder_level < 0
+            ):
+                return "Invalid product values.", 400
+
+            query = """
+                UPDATE products
+                SET product_name = %s,
+                    sku = %s,
+                    category = %s,
+                    description = %s,
+                    unit_price = %s,
+                    quantity_in_stock = %s,
+                    reorder_level = %s
+                WHERE product_id = %s
+                  AND is_active = TRUE
+            """
+
+            cursor.execute(
+                query,
+                (
+                    product_name,
+                    sku,
+                    category,
+                    description,
+                    unit_price,
+                    quantity,
+                    reorder_level,
+                    product_id
+                )
+            )
+
+            connection.commit()
+
+            flash("Product updated successfully!", "success")
+            return redirect(url_for("search_product"))
+
+        return render_template(
+            "edit_product.html",
+            product=product
+        )
+
+    
+    except mysql.connector.IntegrityError:
+        if connection is not None:
+            connection.rollback()
+
+        flash(
+            "This SKU already exists. Please enter a different SKU.",
+            "error"
+        )
+
+        return redirect(url_for("edit_product", product_id=product_id))
+
+    except mysql.connector.Error:
+        if connection is not None:
+            connection.rollback()
+
+        return "Database error. Please try again.", 500
+
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
+
 if __name__ == "__main__":
     app.run(debug=True)
 
