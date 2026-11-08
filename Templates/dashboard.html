@@ -215,10 +215,18 @@
     Search Products
 </a>
 
-            <span class="nav-link disabled">
-                <span class="nav-icon">🛒</span>
-                Sales
-            </span>
+            
+{% if session.get("role") in
+   ["OWNER", "MANAGER", "SALES_PERSONNEL"] %}
+
+<a class="nav-link"
+   href="{{ url_for('record_sale') }}">
+    <span class="nav-icon">🛒</span>
+    Sales
+</a>
+
+{% endif %}
+
 
             <span class="nav-link disabled">
                 <span class="nav-icon">▤</span>
@@ -290,12 +298,25 @@
 </a>
                 </div>
 
-                <div class="feature-card">
-                    <div class="feature-icon">🛒</div>
-                    <h3>Sales Management</h3>
-                    <p>Record sales and track products sold.</p>
-                    <span class="coming-soon">Coming Soon</span>
-                </div>
+                
+<div class="feature-card">
+    <div class="feature-icon">🛒</div>
+    <h3>Sales Management</h3>
+    <p>Record product sales and automatically update inventory quantities.</p>
+
+    {% if session.get("role") in
+       ["OWNER", "MANAGER", "SALES_PERSONNEL"] %}
+        <a class="btn"
+           href="{{ url_for('record_sale') }}">
+            Record Sale
+        </a>
+    {% else %}
+        <span class="coming-soon">
+            Sales access restricted
+        </span>
+    {% endif %}
+</div>
+
 
                 <div class="feature-card">
                     <div class="feature-icon">📊</div>
