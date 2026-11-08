@@ -1,0 +1,186 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Delete Product | IMS</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fa;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: #19375b;
+            color: white;
+            padding: 25px 35px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 70px auto;
+            padding: 0 20px;
+        }
+
+        .delete-card {
+            background: white;
+            padding: 35px;
+            border-radius: 14px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .delete-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            color: #19375b;
+        }
+
+        .warning {
+            color: #b91c1c;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .product-details {
+            background: #f3f6fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: left;
+        }
+
+        .product-details p {
+            margin: 10px 0;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 13px 24px;
+            border-radius: 7px;
+            border: none;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #b91c1c;
+        }
+
+        .btn-cancel {
+            background: #19375b;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #365d89;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="page-header">
+        <h1>Inventory Management System</h1>
+        <p>Delete Product</p>
+    </header>
+
+    <main class="container">
+
+        <div class="delete-card">
+
+            <div class="delete-icon">🗑️</div>
+
+            <h2>Delete Product?</h2>
+
+            <p>
+                Are you sure you want to remove this
+                product from your active inventory?
+            </p>
+
+            <p class="warning">
+                This product will no longer appear
+                in active inventory searches.
+            </p>
+
+            <div class="product-details">
+                <p>
+                    <strong>Product Name:</strong>
+                    {{ product.product_name }}
+                </p>
+
+                <p>
+                    <strong>SKU:</strong>
+                    {{ product.sku }}
+                </p>
+
+                <p>
+                    <strong>Category:</strong>
+                    {{ product.category or "N/A" }}
+                </p>
+
+                <p>
+                    <strong>Quantity:</strong>
+                    {{ product.quantity_in_stock }}
+                </p>
+            </div>
+
+            <div class="actions">
+
+                <a href="{{ url_for('search_product') }}"
+                   class="btn btn-cancel">
+                    Cancel
+                </a>
+
+                <form method="POST"
+                      action="{{ url_for('delete_product', product_id=product.product_id) }}">
+
+                    <input type="hidden"
+                           name="csrf_token"
+                           value="{{ csrf_token() }}">
+
+                    <button type="submit" class="btn btn-delete">
+                        Confirm Delete
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
+</html>

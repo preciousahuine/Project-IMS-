@@ -139,6 +139,32 @@
 .edit-btn:hover {
     background: #365d89;
 }
+
+
+.product-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.delete-btn {
+    display: inline-block;
+    background: #dc3545;
+    color: white;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background: #b91c1c;
+}
+
     </style>
 </head>
 
@@ -219,19 +245,30 @@
                             {% endif %}
                         </td>
 
+
 <td>
     {% if session.get("role") in ["OWNER", "MANAGER", "STOREKEEPER"] %}
-        <a href="{{ url_for('edit_product', product_id=product.product_id) }}"
-           class="edit-btn">
-            ✏️ Edit
-        </a>
+        <div class="product-actions">
+
+            <a href="{{ url_for('edit_product', product_id=product.product_id) }}"
+               class="edit-btn">
+                ✏️ Edit
+            </a>
+
+            <a href="{{ url_for('delete_product', product_id=product.product_id) }}"
+               class="delete-btn">
+                🗑️ Delete
+            </a>
+
+        </div>
     {% endif %}
 </td>
+
 
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="7" class="empty-message">
+                        <td colspan="8" class="empty-message">
                             No products found.
                         </td>
                     </tr>
