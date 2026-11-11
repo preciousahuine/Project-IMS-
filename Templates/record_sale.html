@@ -1,0 +1,298 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Sale | IMS</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fa;
+            color: #263548;
+        }
+
+        .page-header {
+            background: #19375b;
+            color: white;
+            padding: 25px 35px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .sale-card {
+            background: white;
+            padding: 35px;
+            border-radius: 14px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            color: #19375b;
+            margin-top: 0;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 9px;
+            font-weight: bold;
+            color: #344054;
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #ccd5df;
+            border-radius: 7px;
+            font-size: 15px;
+            margin-bottom: 22px;
+        }
+
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: #365d89;
+        }
+
+        input[readonly] {
+            background: #f3f6fa;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 13px 22px;
+            border: none;
+            border-radius: 7px;
+            font-size: 15px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #19375b;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #365d89;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .message {
+            padding: 13px;
+            border-radius: 7px;
+            background: #e7f6ed;
+            color: #176534;
+            margin-bottom: 20px;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sale-card {
+                padding: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="page-header">
+    <h1>Inventory Management System</h1>
+    <p>Sales Management</p>
+</header>
+
+<main class="container">
+
+    <div class="sale-card">
+
+        <h2>🛒 Record New Sale</h2>
+
+        <p class="subtitle">
+            Select a product and enter the quantity sold.
+            Inventory will be updated automatically.
+        </p>
+
+       
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="message {{ 'error' if category == 'error' else '' }}"
+                 role="alert">
+                {{ message }}
+            </div>
+
+            {% if category == "success" %}
+                <a href="{{ url_for('dashboard') }}"
+                   class="btn btn-primary"
+                   style="margin-bottom: 25px;">
+                    ← Back to Dashboard
+                </a>
+            {% endif %}
+
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+
+        <form method="POST" action="{{ url_for('record_sale') }}">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <label for="product_id">Select Product</label>
+
+            <select id="product_id" name="product_id" required>
+                <option value="">-- Select a Product --</option>
+
+                {% for product in products %}
+                    <option value="{{ product.product_id }}"
+                            data-price="{{ product.unit_price }}"
+                            data-stock="{{ product.quantity_in_stock }}">
+                        {{ product.product_name }}
+                        ({{ product.sku }})
+                    </option>
+                {% endfor %}
+            </select>
+
+            <div class="form-grid">
+
+                <div>
+                    <label for="quantity_sold">Quantity Sold</label>
+                    <input type="number"
+                           id="quantity_sold"
+                           name="quantity_sold"
+                           min="1"
+                           step="1"
+                           placeholder="Enter quantity"
+                           required>
+                </div>
+
+                <div>
+                    <label for="available_stock">Available Stock</label>
+                    <input type="text"
+                           id="available_stock"
+                           placeholder="0 units"
+                           readonly>
+                </div>
+
+                <div>
+                    <label for="unit_price">Unit Price ($)</label>
+                    <input type="text"
+                           id="unit_price"
+                           placeholder="0.00"
+                           readonly>
+                </div>
+
+                <div>
+                    <label for="total_amount">Total Amount ($)</label>
+                    <input type="text"
+                           id="total_amount"
+                           placeholder="0.00"
+                           readonly>
+                </div>
+
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">
+                    Record Sale
+                </button>
+
+                <a href="{{ url_for('dashboard') }}"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+
+</main>
+
+<script>
+    const productSelect = document.getElementById("product_id");
+    const quantityInput = document.getElementById("quantity_sold");
+    const stockInput = document.getElementById("available_stock");
+    const priceInput = document.getElementById("unit_price");
+    const totalInput = document.getElementById("total_amount");
+
+    function updateSaleDetails() {
+        const selected = productSelect.selectedOptions[0];
+        const price = Number(selected?.dataset.price || 0);
+        const stock = Number(selected?.dataset.stock || 0);
+        const quantity = Number(quantityInput.value || 0);
+
+        stockInput.value = selected?.value ? stock + " units" : "";
+        priceInput.value = selected?.value ? price.toFixed(2) : "";
+        totalInput.value = selected?.value
+            ? (price * quantity).toFixed(2)
+            : "";
+
+        quantityInput.max = selected?.value ? stock : "";
+
+        if (selected?.value && stock === 0) {
+            quantityInput.setCustomValidity("This product is out of stock.");
+        } else if (quantity > stock && selected?.value) {
+            quantityInput.setCustomValidity(
+                "Quantity cannot exceed available stock."
+            );
+        } else {
+            quantityInput.setCustomValidity("");
+        }
+    }
+
+    productSelect.addEventListener("change", updateSaleDetails);
+    quantityInput.addEventListener("input", updateSaleDetails);
+</script>
+
+</body>
+</html>

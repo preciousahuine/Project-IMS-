@@ -30,3 +30,23 @@ CREATE TABLE IF NOT EXISTS products (
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+CREATE TABLE IF NOT EXISTS sales (
+    sale_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    quantity_sold INT NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL,
+    total_amount DECIMAL(12,2) NOT NULL,
+    sold_by INT NOT NULL,
+    sale_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (product_id)
+        REFERENCES products(product_id),
+
+    FOREIGN KEY (sold_by)
+        REFERENCES users(user_id),
+
+    CONSTRAINT chk_sales_quantity
+        CHECK (quantity_sold > 0)
+);

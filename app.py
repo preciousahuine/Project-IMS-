@@ -652,6 +652,143 @@ def delete_product(product_id):
             connection.close()
 
 
+@app.route("/sales/record", methods=["GET", "POST"])
+def record_sale():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if session.get("role") not in [
+        "OWNER", "MANAGER", "SALES_PERSONNEL"
+    ]:
+        return "Access denied.", 403
+
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        if request.method == "POST":
+            try:
+                product_id = int(request.form.get("product_id", ""))
+                quantity_sold = int(
+                    request.form.get("quantity_sold", "")
+                )
+            except (ValueError, TypeError):
+                flash("Please enter valid sale details.", "error")
+                return redirect(url_for("record_sale"))
+
+            if quantity_sold <= 0:
+                flash("Quantity sold must be greater than zero.", "error")
+                return redirect(url_for("record_sale"))
+
+            # Lock the product row while processing the sale.
+            cursor.execute(
+                """
+                SELECT product_id, product_name,
+                       unit_price, quantity_in_stock
+                FROM products
+                WHERE product_id = %s AND is_active = TRUE
+                FOR UPDATE
+                """,
+                (product_id,)
+            )
+
+            product = cursor.fetchone()
+
+            if product is None:
+                connection.rollback()
+                flash("Product not found or inactive.", "error")
+                return redirect(url_for("record_sale"))
+
+            if quantity_sold > product["quantity_in_stock"]:
+                connection.rollback()
+                flash(
+                    "Insufficient stock. Available quantity: "
+                    + str(product["quantity_in_stock"]),
+                    "error"
+                )
+                return redirect(url_for("record_sale"))
+
+            # Always calculate the total on the server.
+            unit_price = Decimal(str(product["unit_price"]))
+            total_amount = unit_price * quantity_sold
+
+            # Record the sale.
+            cursor.execute(
+                """
+                INSERT INTO sales (
+                    product_id, quantity_sold, unit_price,
+                    total_amount, sold_by
+                )
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (
+                    product_id,
+                    quantity_sold,
+                    unit_price,
+                    total_amount,
+                    session["user_id"]
+                )
+            )
+
+            # Automatically reduce inventory.
+            cursor.execute(
+                """
+                UPDATE products
+                SET quantity_in_stock = quantity_in_stock - %s
+                WHERE product_id = %s
+                """,
+                (quantity_sold, product_id)
+            )
+
+            # Both changes succeed or fail together.
+            connection.commit()
+
+            flash(
+                f"Sale recorded successfully! "
+                f"{quantity_sold} unit(s) of "
+                f"{product['product_name']} sold. "
+                f"Total: ${total_amount:.2f}",
+                "success"
+            )
+
+            return redirect(url_for("record_sale"))
+
+        # GET: Show only active products.
+        cursor.execute(
+            """
+            SELECT product_id, product_name, sku,
+                   unit_price, quantity_in_stock
+            FROM products
+            WHERE is_active = TRUE
+            ORDER BY product_name, product_id
+            """
+        )
+
+        products = cursor.fetchall()
+
+        return render_template(
+            "record_sale.html",
+            products=products
+        )
+
+    except mysql.connector.Error:
+        if connection is not None:
+            connection.rollback()
+
+        flash("Database error. Please try again.", "error")
+        return redirect(url_for("dashboard"))
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+        if connection is not None:
+            connection.close()
+
+
 if __name__ == "__main__":
     app.run(debug=True)
 
