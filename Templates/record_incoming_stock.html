@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>Incoming Stock | IMS</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #f3f6fa;
+            font-family: Arial, sans-serif;
+            color: #19375b;
+        }
+
+        .header {
+            background: #19375b;
+            color: white;
+            padding: 25px 40px;
+        }
+
+        .header h1 { margin: 0 0 8px; }
+
+        .container {
+            max-width: 1150px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,.08);
+        }
+
+        .subtitle {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #ccd5df;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        input[readonly] { background: #f1f5f9; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #19375b;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover { background: #365d89; }
+        .btn-secondary { background: #64748b; }
+        .btn-edit { background: #2563eb; }
+        .btn-delete { background: #dc3545; }
+
+        .message {
+            background: #e7f6ed;
+            color: #166534;
+            padding: 14px;
+            border-radius: 7px;
+            margin-bottom: 20px;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .table-wrapper { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #19375b;
+            color: white;
+            text-align: left;
+            padding: 14px;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .table-actions .btn {
+            padding: 9px 12px;
+        }
+
+        @media (max-width: 650px) {
+            .form-row { grid-template-columns: 1fr; }
+            .card { padding: 20px; }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="header">
+    <h1>📦 Inventory Management System</h1>
+    <p>Stock Receiving Management</p>
+</header>
+
+<main class="container">
+
+    <div class="card">
+        <h2>📥 Record Incoming Stock</h2>
+
+        <p class="subtitle">
+            Record products received from suppliers.
+            Inventory quantities will update automatically.
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="message {{ 'error' if category == 'error' else '' }}"
+                     role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <form action="{{ url_for('record_incoming_stock') }}"
+              method="POST">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <div class="form-group">
+                <label for="product_id">Select Product</label>
+                <select id="product_id" name="product_id" required>
+                    <option value="">-- Select Product --</option>
+
+                    {% for product in products %}
+                    <option value="{{ product.product_id }}"
+                            data-stock="{{ product.quantity_in_stock }}">
+                        {{ product.product_name }} ({{ product.sku }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="current_stock">Current Stock</label>
+                    <input id="current_stock"
+                           value="0 units" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="supplier_name">Supplier Name</label>
+                    <input id="supplier_name"
+                           name="supplier_name"
+                           maxlength="150"
+                           placeholder="Enter supplier name"
+                           required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="quantity_received">
+                        Quantity Received
+                    </label>
+                    <input type="number"
+                           id="quantity_received"
+                           name="quantity_received"
+                           min="1"
+                           step="1"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="new_stock">New Stock</label>
+                    <input id="new_stock"
+                           value="0 units" readonly>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn">
+                    💾 Save
+                </button>
+
+                <a href="{{ url_for('dashboard') }}"
+                   class="btn btn-secondary">
+                    ← Back to Dashboard
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>📋 Incoming Stock History</h2>
+        <p class="subtitle">
+            Review stock received from suppliers and correct
+            records when necessary.
+        </p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Record ID</th>
+                        <th>Product</th>
+                        <th>Supplier</th>
+                        <th>Quantity</th>
+                        <th>Date Received</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in stock_records %}
+                    <tr>
+                        <td>{{ item.stock_id }}</td>
+                        <td>{{ item.product_name }}</td>
+                        <td>{{ item.supplier_name }}</td>
+                        <td>{{ item.quantity_received }}</td>
+                        <td>{{ item.received_date }}</td>
+                        <td>
+                            <div class="table-actions">
+                                <a class="btn btn-edit"
+                                   href="{{ url_for('edit_incoming_stock',
+                                                  stock_id=item.stock_id) }}">
+                                    ✏️ Edit
+                                </a>
+
+                                <form method="POST"
+                                      action="{{ url_for('delete_incoming_stock',
+                                                       stock_id=item.stock_id) }}"
+                                      onsubmit="return confirm('Delete this incoming stock record? This will also adjust inventory.');">
+
+                                    <input type="hidden"
+                                           name="csrf_token"
+                                           value="{{ csrf_token() }}">
+
+                                    <button type="submit"
+                                            class="btn btn-delete">
+                                        🗑️ Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align:center;">
+                            No incoming stock records yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<script>
+    const productSelect = document.getElementById("product_id");
+    const quantityInput = document.getElementById("quantity_received");
+    const currentStockInput = document.getElementById("current_stock");
+    const newStockInput = document.getElementById("new_stock");
+
+    function updateStockPreview() {
+        if (!productSelect.value) {
+            currentStockInput.value = "0 units";
+            newStockInput.value = "0 units";
+            return;
+        }
+
+        const selected = productSelect.selectedOptions[0];
+        const current = Number(selected.dataset.stock || 0);
+        const quantity = Number(quantityInput.value || 0);
+
+        currentStockInput.value = current + " units";
+        newStockInput.value = (current + quantity) + " units";
+    }
+
+    productSelect.addEventListener("change", updateStockPreview);
+    quantityInput.addEventListener("input", updateStockPreview);
+    updateStockPreview();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,312 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>Edit Incoming Stock | IMS</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fa;
+            color: #19375b;
+        }
+
+        .page-header {
+            background: #19375b;
+            color: white;
+            padding: 25px 40px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 35px;
+            border-radius: 14px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .subtitle {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 9px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #ccd5df;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #365d89;
+        }
+
+        input[readonly] {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .info-box {
+            background: #edf3fa;
+            padding: 18px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            line-height: 1.7;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #19375b;
+            color: white;
+            padding: 13px 22px;
+            border: none;
+            border-radius: 7px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #365d89;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+        }
+
+        .warning {
+            background: #fff7ed;
+            color: #9a3412;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 22px;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="page-header">
+    <h1>📦 Inventory Management System</h1>
+    <p>Stock Receiving Management</p>
+</header>
+
+<main class="container">
+
+    <div class="card">
+        <h2>✏️ Edit Incoming Stock</h2>
+
+        <p class="subtitle">
+            Correct a previously recorded supplier delivery.
+            Inventory quantities will be adjusted automatically.
+        </p>
+
+        <div class="info-box">
+            <strong>Record ID:</strong>
+            {{ stock.stock_id }}
+
+            <br>
+
+            <strong>Product:</strong>
+            {{ stock.product_name }} ({{ stock.sku }})
+        </div>
+
+        <div class="warning">
+            ⚠️ Changing the received quantity will also
+            adjust the product's current inventory.
+            Corrections that would make inventory negative
+            will not be allowed.
+        </div>
+
+        <form method="POST"
+              action="{{ url_for('edit_incoming_stock',
+                                 stock_id=stock.stock_id) }}">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <div class="form-group">
+                <label for="supplier_name">Supplier Name</label>
+
+                <input type="text"
+                       id="supplier_name"
+                       name="supplier_name"
+                       maxlength="150"
+                       value="{{ stock.supplier_name }}"
+                       required>
+            </div>
+
+            <div class="form-row">
+
+                <div class="form-group">
+                    <label for="original_quantity">
+                        Previously Received
+                    </label>
+
+                    <input type="text"
+                           id="original_quantity"
+                           value="{{ stock.quantity_received }} units"
+                           readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="quantity_received">
+                        Corrected Quantity
+                    </label>
+
+                    <input type="number"
+                           id="quantity_received"
+                           name="quantity_received"
+                           min="1"
+                           step="1"
+                           value="{{ stock.quantity_received }}"
+                           required>
+                </div>
+
+            </div>
+
+            <div class="form-row">
+
+                <div class="form-group">
+                    <label for="current_stock">
+                        Current Inventory
+                    </label>
+
+                    <input type="text"
+                           id="current_stock"
+                           value="{{ stock.quantity_in_stock }} units"
+                           readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="new_stock">
+                        Inventory After Correction
+                    </label>
+
+                    <input type="text"
+                           id="new_stock"
+                           readonly>
+                </div>
+
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn">
+                    💾 Save Changes
+                </button>
+
+                <a href="{{ url_for('record_incoming_stock') }}"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+
+                <a href="{{ url_for('dashboard') }}"
+                   class="btn btn-secondary">
+                    ← Back to Dashboard
+                </a>
+            </div>
+
+        </form>
+    </div>
+
+</main>
+
+<script>
+    const quantityInput =
+        document.getElementById("quantity_received");
+
+    const newStockInput =
+        document.getElementById("new_stock");
+
+    const originalQuantity =
+        Number({{ stock.quantity_received | tojson }});
+
+    const currentStock =
+        Number({{ stock.quantity_in_stock | tojson }});
+
+    function updatePreview() {
+        const correctedQuantity = Number(quantityInput.value);
+
+        if (
+            quantityInput.value === "" ||
+            !Number.isInteger(correctedQuantity) ||
+            correctedQuantity <= 0
+        ) {
+            newStockInput.value = "Enter a valid quantity";
+            return;
+        }
+
+        const difference = correctedQuantity - originalQuantity;
+        const updatedStock = currentStock + difference;
+
+        if (updatedStock < 0) {
+            newStockInput.value = "Insufficient inventory";
+        } else {
+            newStockInput.value = updatedStock + " units";
+        }
+    }
+
+    quantityInput.addEventListener("input", updatePreview);
+    updatePreview();
+</script>
+
+</body>
+</html>

@@ -789,6 +789,448 @@ def record_sale():
             connection.close()
 
 
+
+# User Story #9: Record Incoming Stock
+
+@app.route("/stock/incoming", methods=["GET", "POST"])
+def record_incoming_stock():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if session.get("role") not in [
+        "OWNER", "MANAGER", "STOREKEEPER"
+    ]:
+        return "Access denied.", 403
+
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        if request.method == "POST":
+
+            try:
+                product_id = int(
+                    request.form.get("product_id", "")
+                )
+                quantity_received = int(
+                    request.form.get("quantity_received", "")
+                )
+            except (ValueError, TypeError):
+                flash("Enter valid stock details.", "error")
+                return redirect(url_for("record_incoming_stock"))
+
+            supplier_name = request.form.get(
+                "supplier_name", ""
+            ).strip()
+
+            if not supplier_name or len(supplier_name) > 150:
+                flash("Enter a valid supplier name.", "error")
+                return redirect(url_for("record_incoming_stock"))
+
+            if quantity_received <= 0:
+                flash("Quantity must be greater than zero.", "error")
+                return redirect(url_for("record_incoming_stock"))
+
+            # Lock product during inventory update
+            cursor.execute(
+                """
+                SELECT product_id, quantity_in_stock
+                FROM products
+                WHERE product_id = %s AND is_active = TRUE
+                FOR UPDATE
+                """,
+                (product_id,)
+            )
+
+            product = cursor.fetchone()
+
+            if product is None:
+                connection.rollback()
+                flash("Product not found.", "error")
+                return redirect(url_for("record_incoming_stock"))
+
+            new_stock = (
+                product["quantity_in_stock"] + quantity_received
+            )
+
+            if new_stock > 2147483647:
+                connection.rollback()
+                flash("Stock quantity exceeds the allowed limit.", "error")
+                return redirect(url_for("record_incoming_stock"))
+
+            cursor.execute(
+                """
+                INSERT INTO incoming_stock
+                    (product_id, supplier_name,
+                     quantity_received, received_by)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (
+                    product_id,
+                    supplier_name,
+                    quantity_received,
+                    session["user_id"]
+                )
+            )
+
+            cursor.execute(
+                """
+                UPDATE products
+                SET quantity_in_stock = %s
+                WHERE product_id = %s AND is_active = TRUE
+                """,
+                (new_stock, product_id)
+            )
+
+            connection.commit()
+
+            flash(
+                "Incoming stock recorded successfully!",
+                "success"
+            )
+
+            return redirect(url_for("record_incoming_stock"))
+
+        # Products available for receiving
+        cursor.execute(
+            """
+            SELECT product_id, product_name, sku,
+                   quantity_in_stock
+            FROM products
+            WHERE is_active = TRUE
+            ORDER BY product_name
+            """
+        )
+        products = cursor.fetchall()
+
+        # Incoming stock history
+        cursor.execute(
+            """
+            SELECT
+                s.stock_id,
+                p.product_name,
+                s.supplier_name,
+                s.quantity_received,
+                s.received_date
+           
+    FROM incoming_stock s
+    JOIN products p
+    ON s.product_id = p.product_id
+    WHERE s.is_active = TRUE
+    ORDER BY s.received_date DESC, s.stock_id DESC
+     """
+        )
+        stock_records = cursor.fetchall()
+
+        return render_template(
+            "record_incoming_stock.html",
+            products=products,
+            stock_records=stock_records
+        )
+
+    except mysql.connector.Error:
+        if connection is not None:
+            connection.rollback()
+
+        flash("Database error. Please try again.", "error")
+        return redirect(url_for("dashboard"))
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+        if connection is not None:
+            connection.close()
+
+
+# User Story #9: Edit Incoming Stock
+
+@app.route("/stock/incoming/<int:stock_id>/edit",
+           methods=["GET", "POST"])
+def edit_incoming_stock(stock_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if session.get("role") not in [
+        "OWNER", "MANAGER", "STOREKEEPER"
+    ]:
+        return "Access denied.", 403
+
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        # Lock the receipt first, then its product.
+        
+        cursor.execute(
+        """
+    SELECT stock_id, product_id, supplier_name,
+           quantity_received
+    FROM incoming_stock
+    WHERE stock_id = %s AND is_active = TRUE
+    FOR UPDATE
+    """,
+    (stock_id,)
+)
+
+
+        stock = cursor.fetchone()
+
+        if stock is None:
+            connection.rollback()
+            return "Incoming stock record not found.", 404
+
+        cursor.execute(
+            """
+            SELECT product_name, sku, quantity_in_stock
+            FROM products
+            WHERE product_id = %s AND is_active = TRUE
+            FOR UPDATE
+            """,
+            (stock["product_id"],)
+        )
+
+        product = cursor.fetchone()
+
+        if product is None:
+            connection.rollback()
+            return "Product not found or inactive.", 404
+
+        stock.update(product)
+
+        if request.method == "POST":
+
+            supplier_name = request.form.get(
+                "supplier_name", ""
+            ).strip()
+
+            try:
+                corrected_quantity = int(
+                    request.form.get("quantity_received", "")
+                )
+            except (ValueError, TypeError):
+                flash("Enter a valid quantity.", "error")
+                return redirect(url_for(
+                    "edit_incoming_stock", stock_id=stock_id
+                ))
+
+            if not supplier_name or len(supplier_name) > 150:
+                flash("Enter a valid supplier name.", "error")
+                return redirect(url_for(
+                    "edit_incoming_stock", stock_id=stock_id
+                ))
+
+            if corrected_quantity <= 0:
+                flash(
+                    "Quantity must be greater than zero.",
+                    "error"
+                )
+                return redirect(url_for(
+                    "edit_incoming_stock", stock_id=stock_id
+                ))
+
+            difference = (
+                corrected_quantity - stock["quantity_received"]
+            )
+
+            new_stock = stock["quantity_in_stock"] + difference
+
+            if new_stock < 0 or new_stock > 2147483647:
+                connection.rollback()
+                flash(
+                    "Correction cannot be applied to current inventory.",
+                    "error"
+                )
+                return redirect(url_for(
+                    "edit_incoming_stock", stock_id=stock_id
+                ))
+
+            cursor.execute(
+                """
+                UPDATE incoming_stock
+                SET supplier_name = %s,
+                    quantity_received = %s
+                WHERE stock_id = %s
+                """,
+                (supplier_name, corrected_quantity, stock_id)
+            )
+
+            cursor.execute(
+                """
+                UPDATE products
+                SET quantity_in_stock = %s
+                WHERE product_id = %s
+                """,
+                (new_stock, stock["product_id"])
+            )
+
+            connection.commit()
+
+            flash(
+                "Incoming stock updated successfully!",
+                "success"
+            )
+
+            return redirect(url_for("record_incoming_stock"))
+
+        connection.rollback()
+
+        return render_template(
+            "edit_incoming_stock.html",
+            stock=stock
+        )
+
+    except mysql.connector.Error:
+        if connection is not None:
+            connection.rollback()
+
+        flash("Database error. Please try again.", "error")
+        return redirect(url_for("record_incoming_stock"))
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+        if connection is not None:
+            connection.close()
+
+
+
+# User Story #9: Soft Delete Incoming Stock
+
+@app.route("/stock/incoming/<int:stock_id>/delete",
+           methods=["POST"])
+def delete_incoming_stock(stock_id):
+
+    # Require login
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    # Restrict access to authorized roles
+    if session.get("role") not in [
+        "OWNER", "MANAGER", "STOREKEEPER"
+    ]:
+        return "Access denied.", 403
+
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        # Lock the incoming stock record
+        cursor.execute(
+            """
+            SELECT stock_id, product_id, quantity_received
+            FROM incoming_stock
+            WHERE stock_id = %s AND is_active = TRUE
+            FOR UPDATE
+            """,
+            (stock_id,)
+        )
+
+        stock = cursor.fetchone()
+
+        if stock is None:
+            connection.rollback()
+            flash(
+                "Incoming stock record not found or already deleted.",
+                "error"
+            )
+            return redirect(url_for("record_incoming_stock"))
+
+        # Lock the corresponding product
+        cursor.execute(
+            """
+            SELECT quantity_in_stock
+            FROM products
+            WHERE product_id = %s
+            FOR UPDATE
+            """,
+            (stock["product_id"],)
+        )
+
+        product = cursor.fetchone()
+
+        if product is None:
+            connection.rollback()
+            flash("Product not found.", "error")
+            return redirect(url_for("record_incoming_stock"))
+
+        # Calculate inventory after removing this receipt
+        new_stock = (
+            product["quantity_in_stock"]
+            - stock["quantity_received"]
+        )
+
+        # Prevent negative inventory
+        if new_stock < 0:
+            connection.rollback()
+            flash(
+                "Cannot delete this receipt because "
+                "there is insufficient stock remaining.",
+                "error"
+            )
+            return redirect(url_for("record_incoming_stock"))
+
+        # Soft delete: preserve the record in the database
+        cursor.execute(
+            """
+            UPDATE incoming_stock
+            SET is_active = FALSE
+            WHERE stock_id = %s AND is_active = TRUE
+            """,
+            (stock_id,)
+        )
+
+        # Adjust the product's inventory
+        cursor.execute(
+            """
+            UPDATE products
+            SET quantity_in_stock = %s
+            WHERE product_id = %s
+            """,
+            (new_stock, stock["product_id"])
+        )
+
+        # Save both changes together
+        connection.commit()
+
+        flash(
+            "Incoming stock record deleted successfully. "
+            "Inventory has been adjusted.",
+            "success"
+        )
+
+        return redirect(url_for("record_incoming_stock"))
+
+    except mysql.connector.Error:
+        if connection is not None:
+            connection.rollback()
+
+        flash(
+            "Database error. Please try again.",
+            "error"
+        )
+        return redirect(url_for("record_incoming_stock"))
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+        if connection is not None:
+            connection.close()
+
+
 if __name__ == "__main__":
     app.run(debug=True)
 
