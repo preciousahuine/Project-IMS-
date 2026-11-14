@@ -9,7 +9,66 @@
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/style.css') }}">
 
+
+
+
     <style>
+        .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.account-dropdown {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.account-dropdown summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 12px 16px;
+    background: #19375b;
+    color: white;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.account-dropdown summary::-webkit-details-marker {
+    display: none;
+}
+
+.account-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    width: 190px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 5px 18px rgba(0,0,0,0.15);
+    padding: 8px;
+    z-index: 100;
+}
+
+.account-menu button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    color: #19375b;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+.account-menu button:hover {
+    background: #edf3fa;
+}
+
         body {
             margin: 0;
             font-family: Arial, sans-serif;
@@ -237,9 +296,18 @@
 
 {% endif %}
 
-
+{% if session.get("role") in ["OWNER", "MANAGER"] %}
+<a class="nav-link"
+   href="{{ url_for('view_stock_audit_log') }}">
+    <span class="nav-icon">📋</span>
+    Stock Audit Log
+</a>
+{% endif %}
             <span class="nav-link disabled">
                 <span class="nav-icon">▤</span>
+
+
+
                 Reports
             </span>
         </nav>
@@ -250,10 +318,36 @@
 
 
 
-        <div class="topbar">
-            <h1>Inventory Management System</h1>
-            <div>Manager Dashboard</div>
+        
+<div class="topbar">
+    <div class="topbar-title">
+        <h1>Inventory Management System</h1>
+        <div>
+            {{ session.get("role", "User") | title }} Dashboard
         </div>
+    </div>
+
+    <details class="account-dropdown">
+        <summary>
+            👤 {{ session.get("role", "User") | title }} ▾
+        </summary>
+
+        <div class="account-menu">
+            <form action="{{ url_for('logout') }}" method="POST">
+                <input type="hidden" name="csrf_token"
+                       value="{{ csrf_token() }}">
+                <button type="submit">🚪 Logout</button>
+            </form>
+
+            <form action="{{ url_for('logout') }}" method="POST">
+                <input type="hidden" name="csrf_token"
+                       value="{{ csrf_token() }}">
+                <button type="submit">🔄 Switch Account</button>
+            </form>
+        </div>
+    </details>
+</div>
+
 
         <main class="content">
 
@@ -271,7 +365,7 @@
             <!-- WELCOME -->
             <section class="welcome">
                 <h2>
-                    Welcome, {{ session.get("user_name", "User") }}!
+                   Welcome, {{ session.get("role", "User") | title }}!
                 </h2>
                 <p>
                     Role: {{ session.get("role", "Unknown") }}

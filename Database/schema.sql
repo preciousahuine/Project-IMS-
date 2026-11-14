@@ -73,3 +73,33 @@ CREATE TABLE IF NOT EXISTS incoming_stock (
         CHECK (quantity_received > 0)
 );
 
+
+-- User Story #10: Log All Stock Changes
+
+CREATE TABLE IF NOT EXISTS stock_audit_log (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    product_id INT NOT NULL,
+
+    action_type VARCHAR(50) NOT NULL,
+
+    previous_quantity INT NOT NULL,
+
+    new_quantity INT NOT NULL,
+
+    quantity_change INT NOT NULL,
+
+    changed_by INT NOT NULL,
+
+    change_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    description VARCHAR(255),
+
+    FOREIGN KEY (product_id)
+        REFERENCES products(product_id),
+
+    FOREIGN KEY (changed_by)
+        REFERENCES users(user_id)
+);
+
+
