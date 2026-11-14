@@ -743,8 +743,39 @@ def record_sale():
                 (quantity_sold, product_id)
             )
 
-            # Both changes succeed or fail together.
+
+       
+            # User Story #10: Log stock changes after a sale
+            previous_quantity = product["quantity_in_stock"]
+            new_quantity = previous_quantity - quantity_sold
+
+            cursor.execute(
+                """
+                INSERT INTO stock_audit_log (
+                    product_id,
+                    action_type,
+                    previous_quantity,
+                    new_quantity,
+                    quantity_change,
+                    changed_by,
+                    description
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    product_id,
+                    "SALE_RECORDED",
+                    previous_quantity,
+                    new_quantity,
+                    -quantity_sold,
+                    session["user_id"],
+                    f"Sale recorded: {quantity_sold} unit(s) sold."
+                )
+            )
+
+            # Save sale, inventory update, and audit log together
             connection.commit()
+
 
             flash(
                 f"Sale recorded successfully! "
@@ -885,6 +916,36 @@ def record_incoming_stock():
                 """,
                 (new_stock, product_id)
             )
+
+
+            # User Story #10: Log incoming stock changes
+            previous_quantity = product["quantity_in_stock"]
+
+            cursor.execute(
+                """
+                INSERT INTO stock_audit_log (
+                    product_id,
+                    action_type,
+                    previous_quantity,
+                    new_quantity,
+                    quantity_change,
+                    changed_by,
+                    description
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    product_id,
+                    "STOCK_RECEIVED",
+                    previous_quantity,
+                    new_stock,
+                    quantity_received,
+                    session["user_id"],
+                    f"Received {quantity_received} unit(s) "
+                    f"from {supplier_name}."
+                )
+            )
+
 
             connection.commit()
 
@@ -1072,6 +1133,37 @@ def edit_incoming_stock(stock_id):
                 (new_stock, stock["product_id"])
             )
 
+
+            # User Story #10: Log incoming stock corrections
+            previous_quantity = stock["quantity_in_stock"]
+
+            cursor.execute(
+                """
+                INSERT INTO stock_audit_log (
+                    product_id,
+                    action_type,
+                    previous_quantity,
+                    new_quantity,
+                    quantity_change,
+                    changed_by,
+                    description
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    stock["product_id"],
+                    "STOCK_RECEIPT_EDITED",
+                    previous_quantity,
+                    new_stock,
+                    difference,
+                    session["user_id"],
+                    f"Incoming stock receipt #{stock_id} corrected "
+                    f"from {stock['quantity_received']} "
+                    f"to {corrected_quantity} unit(s)."
+                )
+            )
+
+
             connection.commit()
 
             flash(
@@ -1202,6 +1294,36 @@ def delete_incoming_stock(stock_id):
             (new_stock, stock["product_id"])
         )
 
+
+        # User Story #10: Log deleted incoming stock
+        previous_quantity = product["quantity_in_stock"]
+
+        cursor.execute(
+            """
+            INSERT INTO stock_audit_log (
+                product_id,
+                action_type,
+                previous_quantity,
+                new_quantity,
+                quantity_change,
+                changed_by,
+                description
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                stock["product_id"],
+                "STOCK_RECEIPT_DELETED",
+                previous_quantity,
+                new_stock,
+                -stock["quantity_received"],
+                session["user_id"],
+                f"Incoming stock receipt #{stock_id} deleted. "
+                f"Reversed {stock['quantity_received']} unit(s)."
+            )
+        )
+
+
         # Save both changes together
         connection.commit()
 
@@ -1229,6 +1351,79 @@ def delete_incoming_stock(stock_id):
 
         if connection is not None:
             connection.close()
+
+
+# User Story #10: View Stock Audit Log
+@app.route("/stock/audit-log", methods=["GET"])
+def view_stock_audit_log():
+
+    # User must be logged in
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    # Only Owners and Managers can view audit records
+    if session.get("role") not in ["OWNER", "MANAGER"]:
+        return "Access denied.", 403
+
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+       
+        cursor.execute(
+            """
+            SELECT
+                a.log_id,
+                a.product_id,
+                p.product_name,
+                a.action_type,
+                a.previous_quantity,
+                a.new_quantity,
+                a.quantity_change,
+                u.name AS changed_by_name,
+                a.change_date,
+                a.description
+            FROM stock_audit_log AS a
+            JOIN products AS p
+                ON a.product_id = p.product_id
+            JOIN users AS u
+                ON a.changed_by = u.user_id
+            ORDER BY a.change_date DESC, a.log_id DESC
+            """
+        )
+
+
+        audit_logs = cursor.fetchall()
+
+        return render_template(
+            "stock_audit_log.html",
+            audit_logs=audit_logs
+        )
+
+    except mysql.connector.Error as error:
+        print("Stock Audit Log database error:", error)
+        flash("Unable to load stock audit records.", "error")
+        return redirect(url_for("dashboard"))
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+        if connection is not None:
+            connection.close()
+
+
+# Logout and Switch Account
+@app.route("/logout", methods=["POST"])
+def logout():
+    session.clear()
+    flash("You have been logged out successfully.", "success")
+    return redirect(url_for("login"))
+
+
 
 
 if __name__ == "__main__":

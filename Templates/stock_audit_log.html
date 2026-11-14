@@ -1,0 +1,251 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Stock Audit Log | IMS</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fa;
+            color: #19375b;
+        }
+
+        .page-header {
+            background: #19375b;
+            color: white;
+            padding: 25px 40px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+        }
+
+        .page-header p {
+            margin-bottom: 0;
+            color: #dce8f5;
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .subtitle {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: #19375b;
+            color: white;
+            padding: 14px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        tr:hover td {
+            background: #f8fafc;
+        }
+
+        .positive {
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        .negative {
+            color: #b91c1c;
+            font-weight: bold;
+        }
+
+        .neutral {
+            color: #64748b;
+            font-weight: bold;
+        }
+
+        .action-badge {
+            display: inline-block;
+            background: #edf3fa;
+            color: #19375b;
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #19375b;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .btn:hover {
+            background: #365d89;
+        }
+
+        .empty {
+            padding: 35px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        @media (max-width: 700px) {
+            .page-header {
+                padding: 20px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="page-header">
+    <h1>📦 Inventory Management System</h1>
+    <p>Inventory Monitoring and Accountability</p>
+</header>
+
+<main class="container">
+
+    <a href="{{ url_for('dashboard') }}" class="btn">
+        ← Back to Dashboard
+    </a>
+
+    <div class="card">
+
+        <h2>📋 Stock Audit Log</h2>
+
+        <p class="subtitle">
+            Review inventory changes, including the
+            responsible user, quantities, and timestamps.
+            Audit records are read-only.
+        </p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Log ID</th>
+                        <th>Product</th>
+                        <th>Action</th>
+                        <th>Previous Stock</th>
+                        <th>New Stock</th>
+                        <th>Change</th>
+                        <th>Changed By</th>
+                        <th>Date &amp; Time</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for log in audit_logs %}
+                    <tr>
+                        <td>{{ log.log_id }}</td>
+
+                        <td>
+                            {{ log.product_name }}
+                        </td>
+
+                        <td>
+                            <span class="action-badge">
+                                {{ log.action_type
+                                   | replace('_', ' ')
+                                   | title }}
+                            </span>
+                        </td>
+
+                        <td>{{ log.previous_quantity }}</td>
+
+                        <td>{{ log.new_quantity }}</td>
+
+                        <td>
+                            {% if log.quantity_change > 0 %}
+                                <span class="positive">
+                                    +{{ log.quantity_change }}
+                                </span>
+                            {% elif log.quantity_change < 0 %}
+                                <span class="negative">
+                                    {{ log.quantity_change }}
+                                </span>
+                            {% else %}
+                                <span class="neutral">0</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ log.changed_by_name }}
+                        </td>
+
+                        <td>
+                            {{ log.change_date.strftime(
+                                '%b %d, %Y %I:%M %p'
+                            ) if log.change_date else 'N/A' }}
+                        </td>
+
+                        <td>{{ log.description or '—' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="empty">
+                            No stock changes have been recorded yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</main>
+
+</body>
+</html>
