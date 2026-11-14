@@ -50,3 +50,26 @@ CREATE TABLE IF NOT EXISTS sales (
     CONSTRAINT chk_sales_quantity
         CHECK (quantity_sold > 0)
 );
+
+
+-- User Story #9: Record Incoming Stock
+
+CREATE TABLE IF NOT EXISTS incoming_stock (
+    stock_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    supplier_name VARCHAR(150) NOT NULL,
+    quantity_received INT NOT NULL,
+    received_by INT NOT NULL,
+    received_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+
+    FOREIGN KEY (product_id)
+        REFERENCES products(product_id),
+
+    FOREIGN KEY (received_by)
+        REFERENCES users(user_id),
+
+    CONSTRAINT chk_incoming_quantity
+        CHECK (quantity_received > 0)
+);
+

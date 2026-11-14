@@ -225,6 +225,16 @@
     Sales
 </a>
 
+
+{% if session.get("role") in ["OWNER", "MANAGER", "STOREKEEPER"] %}
+<a class="nav-link"
+   href="{{ url_for('record_incoming_stock') }}">
+    <span class="nav-icon">📥</span>
+    Incoming Stock
+</a>
+{% endif %}
+
+
 {% endif %}
 
 
@@ -237,6 +247,8 @@
 
     <!-- MAIN AREA -->
     <div class="main-content">
+
+
 
         <div class="topbar">
             <h1>Inventory Management System</h1>
@@ -316,6 +328,22 @@
         </span>
     {% endif %}
 </div>
+
+
+{% if session.get("role") in ["OWNER", "MANAGER", "STOREKEEPER"] %}
+<div class="feature-card">
+    <div class="feature-icon">📥</div>
+    <h3>Receive Stock</h3>
+    <p>
+        Record incoming products from suppliers
+        and automatically update inventory quantities.
+    </p>
+    <a class="btn"
+       href="{{ url_for('record_incoming_stock') }}">
+        Receive Stock
+    </a>
+</div>
+{% endif %}
 
 
                 <div class="feature-card">
