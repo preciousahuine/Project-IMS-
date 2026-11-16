@@ -404,7 +404,100 @@ def dashboard():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    return render_template("dashboard.html")
+    inventory_stats = None
+    attention_products = []
+
+    if session.get("role") in ("OWNER", "MANAGER"):
+        conn = get_db_connection()
+        cursor = None
+
+        try:
+            cursor = conn.cursor(dictionary=True)
+
+            cursor.execute("""
+                SELECT
+                    COUNT(*) AS total_products,
+
+                    COALESCE(
+                        SUM(unit_price * quantity_in_stock), 0
+                    ) AS stock_value,
+
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN quantity_in_stock > 0
+                                 AND quantity_in_stock <= reorder_level
+                                THEN 1 ELSE 0
+                            END
+                        ), 0
+                    ) AS low_stock,
+
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN quantity_in_stock = 0
+                                THEN 1 ELSE 0
+                            END
+                        ), 0
+                    ) AS out_of_stock
+
+                FROM products
+                WHERE is_active = TRUE
+            """)
+
+            inventory_stats = cursor.fetchone()
+            inventory_stats["healthy_stock"] = (
+    inventory_stats["total_products"]
+    - inventory_stats["low_stock"]
+    - inventory_stats["out_of_stock"]
+)
+
+             
+            # Retrieve products that need restocking
+            cursor.execute("""
+                SELECT
+                    product_id,
+                    product_name,
+                    sku,
+                    quantity_in_stock,
+                    reorder_level,
+                    CASE
+                        WHEN quantity_in_stock = 0
+                        THEN 'Out of Stock'
+                        ELSE 'Low Stock'
+                    END AS stock_status
+                FROM products
+                WHERE is_active = TRUE
+                  AND (
+                      quantity_in_stock = 0
+                      OR (
+                          quantity_in_stock > 0
+                          AND quantity_in_stock <= reorder_level
+                      )
+                  )
+                ORDER BY
+                    CASE
+                        WHEN quantity_in_stock = 0 THEN 0
+                        ELSE 1
+                    END,
+                    quantity_in_stock ASC,
+                    product_name ASC
+            """)
+
+            attention_products = cursor.fetchall()
+
+
+
+        finally:
+            if cursor is not None:
+                cursor.close()
+            conn.close()
+
+    return render_template(
+    "dashboard.html",
+    inventory_stats=inventory_stats,
+    attention_products=attention_products
+)
 
 
 @app.route("/products/search", methods=["GET"])

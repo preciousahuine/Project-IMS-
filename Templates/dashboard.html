@@ -13,6 +13,207 @@
 
 
     <style>
+
+
+/* COMPACT EXPANDABLE ATTENTION CARD */
+
+.attention-section {
+    background: #ffffff;
+    border: 1px solid #e5ebf2;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 12px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+}
+
+.attention-summary {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.attention-warning-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    background: #fffbeb;
+    border-radius: 10px;
+    font-size: 23px;
+}
+
+.attention-summary-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.attention-summary-text h3 {
+    color: #19375b;
+    font-size: 16px;
+    margin: 0 0 5px;
+}
+
+.attention-summary-text p {
+    color: #64748b;
+    font-size: 13px;
+    margin: 0;
+}
+
+#attention-toggle {
+    margin-left: auto;
+    background: #19375b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+#attention-toggle:hover {
+    background: #365d89;
+}
+
+.attention-details {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e5ebf2;
+}
+
+#attention-details[hidden] {
+    display: none !important;
+}
+
+.attention-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+@media (max-width: 600px) {
+    .attention-summary {
+        flex-wrap: wrap;
+    }
+
+    #attention-toggle {
+        margin-left: 0;
+    }
+
+    .attention-controls {
+        flex-wrap: wrap;
+    }
+}
+
+
+/* STOCK HEALTH */
+
+.stock-health {
+    background: white;
+    border-radius: 14px;
+    padding: 25px;
+    margin-top: 24px;
+    border: 1px solid #e5ebf2;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+}
+
+.stock-health > h3 {
+    color: #19375b;
+    margin: 0 0 8px;
+}
+
+.stock-health > p {
+    color: #64748b;
+    margin: 0 0 20px;
+    font-size: 14px;
+}
+
+.stock-health-bar,
+.stock-health-labels {
+    display: flex;
+    width: 100%;
+}
+
+.stock-health-bar {
+    height: 18px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #e5e7eb;
+}
+
+.health-green { background: #16a34a; }
+.health-orange { background: #f59e0b; }
+.health-red { background: #dc2626; }
+
+.stock-health-labels {
+    margin-top: 8px;
+    margin-bottom: 25px;
+}
+
+.health-label {
+    box-sizing: border-box;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.health-label-green { color: #15803d; }
+.health-label-orange { color: #b45309; }
+.health-label-red { color: #dc2626; }
+
+.stock-health-cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.health-card {
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.health-card h3 {
+    font-size: 28px;
+    margin: 0 0 8px;
+}
+
+.health-card p {
+    margin: 0;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.healthy-card {
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.low-card {
+    background: #fffbeb;
+    color: #b45309;
+}
+
+.out-card {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+@media (max-width: 600px) {
+    .stock-health-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .health-label {
+        font-size: 10px;
+    }
+}
+
         .topbar {
     display: flex;
     justify-content: space-between;
@@ -239,6 +440,432 @@
                 padding: 20px;
             }
         }
+
+
+/* INVENTORY OVERVIEW */
+
+.inventory-overview {
+    margin-bottom: 35px;
+}
+
+.overview-header {
+    background: linear-gradient(
+        120deg,
+        #4c1d95,
+        #7e22ce,
+        #a855f7
+    );
+    color: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    box-shadow: 0 8px 24px rgba(88, 28, 135, 0.18);
+}
+
+.overview-label {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #e9d5ff;
+    font-weight: bold;
+}
+
+.overview-header h2 {
+    font-size: 28px;
+    margin: 12px 0;
+}
+
+.overview-header p {
+    margin: 0;
+    color: #f3e8ff;
+}
+
+.overview-header-icon {
+    font-size: 42px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 18px;
+    border-radius: 15px;
+}
+
+.overview-cards {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(190px, 1fr)
+    );
+    gap: 20px;
+}
+
+.overview-card {
+    background: white;
+    padding: 24px;
+    border-radius: 14px;
+    border: 1px solid #e5ebf2;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.overview-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.10);
+}
+
+.overview-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    font-size: 24px;
+    margin-bottom: 12px;
+}
+
+.products-icon { background: #eff6ff; }
+.value-icon { background: #f0fdf4; }
+.low-icon { background: #fffbeb; }
+.out-icon { background: #fef2f2; }
+
+.overview-card p {
+    color: #64748b;
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+.overview-card h3 {
+    font-size: 30px;
+    color: #19375b;
+    margin: 10px 0;
+    overflow-wrap: anywhere;
+}
+
+.overview-card small {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+@media (max-width: 600px) {
+    .overview-header {
+        padding: 22px;
+    }
+
+    .overview-header-icon {
+        display: none;
+    }
+
+    .overview-header h2 {
+        font-size: 23px;
+    }
+}
+
+/* COMPACT DASHBOARD DESIGN */
+
+.content {
+    padding: 22px 28px;
+}
+
+/* Welcome section */
+.welcome {
+    padding: 20px 24px;
+    margin-bottom: 20px;
+}
+
+.welcome h2 {
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+.welcome p {
+    font-size: 14px;
+    margin: 7px 0;
+}
+
+/* Purple Inventory Overview */
+.overview-header {
+    padding: 22px 26px;
+    margin-bottom: 16px;
+}
+
+.overview-header h2 {
+    font-size: 24px;
+    margin: 8px 0;
+}
+
+.overview-header p {
+    font-size: 14px;
+}
+
+.overview-header-icon {
+    font-size: 30px;
+    padding: 12px;
+}
+
+/* Statistics cards */
+.overview-cards {
+    gap: 14px;
+}
+
+.overview-card {
+    padding: 18px 20px;
+}
+
+.overview-card-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.overview-card h3 {
+    font-size: 25px;
+    margin: 7px 0;
+}
+
+.overview-card p {
+    font-size: 13px;
+}
+
+/* Stock Health */
+.stock-health {
+    padding: 20px 24px;
+    margin-top: 18px;
+}
+
+.stock-health > h3 {
+    font-size: 18px;
+}
+
+.stock-health-bar {
+    height: 14px;
+}
+
+.stock-health-labels {
+    margin-bottom: 18px;
+}
+
+.health-card {
+    padding: 14px 18px;
+}
+
+.health-card h3 {
+    font-size: 24px;
+}
+
+.health-card p {
+    font-size: 13px;
+}
+
+/* Inventory Management */
+.section-title {
+    font-size: 21px;
+    margin-bottom: 14px;
+}
+
+.cards {
+    gap: 15px;
+}
+
+.feature-card {
+    padding: 20px;
+}
+
+@media (max-width: 700px) {
+    .content {
+        padding: 18px;
+    }
+}
+
+/* EXTRA COMPACT INVENTORY DASHBOARD */
+
+/* Main content spacing */
+.content {
+    padding: 16px 24px;
+}
+
+/* Welcome section */
+.welcome {
+    padding: 15px 20px;
+    margin-bottom: 14px;
+}
+
+.welcome h2 {
+    font-size: 19px;
+    margin-bottom: 6px;
+}
+
+.welcome p {
+    font-size: 13px;
+    margin: 4px 0;
+}
+
+/* Purple inventory header */
+.overview-header {
+    padding: 16px 22px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+}
+
+.overview-header h2 {
+    font-size: 21px;
+    margin: 5px 0;
+}
+
+.overview-header p {
+    font-size: 12px;
+}
+
+.overview-label {
+    font-size: 10px;
+}
+
+.overview-header-icon {
+    font-size: 24px;
+    padding: 9px;
+}
+
+/* Four statistics cards */
+.overview-cards {
+    gap: 10px;
+}
+
+.overview-card {
+    padding: 12px 16px;
+    border-radius: 10px;
+}
+
+.overview-card-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 17px;
+    margin-bottom: 5px;
+}
+
+.overview-card p {
+    font-size: 12px;
+    margin: 3px 0;
+}
+
+.overview-card h3 {
+    font-size: 22px;
+    margin: 5px 0;
+}
+
+.overview-card small {
+    font-size: 11px;
+}
+
+/* Stock Health */
+.stock-health {
+    padding: 14px 18px;
+    margin-top: 12px;
+    border-radius: 10px;
+}
+
+.stock-health > h3 {
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.stock-health > p {
+    font-size: 12px;
+    margin-bottom: 12px;
+}
+
+.stock-health-bar {
+    height: 11px;
+}
+
+.stock-health-labels {
+    margin-top: 5px;
+    margin-bottom: 12px;
+}
+
+.health-label {
+    font-size: 11px;
+}
+
+.stock-health-cards {
+    gap: 10px;
+}
+
+.health-card {
+    padding: 10px 14px;
+    border-radius: 9px;
+}
+
+.health-card h3 {
+    font-size: 21px;
+    margin-bottom: 4px;
+}
+
+.health-card p {
+    font-size: 12px;
+}
+
+/* Products Needing Attention */
+.attention-section {
+    padding: 14px 18px;
+    margin-top: 12px;
+}
+
+.attention-heading {
+    margin-bottom: 12px;
+}
+
+.attention-heading h3 {
+    font-size: 16px;
+}
+
+.attention-controls {
+    margin-bottom: 12px;
+}
+
+.attention-table th,
+.attention-table td {
+    padding: 8px 10px;
+}
+
+/* Inventory Management */
+.section-title {
+    font-size: 19px;
+    margin-top: 16px;
+    margin-bottom: 10px;
+}
+
+.cards {
+    gap: 12px;
+}
+
+.feature-card {
+    padding: 15px;
+}
+
+.feature-icon {
+    font-size: 25px;
+    margin-bottom: 8px;
+}
+
+.feature-card h3 {
+    font-size: 16px;
+}
+
+.feature-card p {
+    font-size: 13px;
+    min-height: 0;
+}
+
+@media (max-width: 700px) {
+    .content {
+        padding: 14px;
+    }
+}
+#attention-details[hidden] {
+    display: none !important;
+}
+
     </style>
 </head>
 
@@ -376,6 +1003,206 @@
                 </p>
             </section>
 
+
+{% if session.get("role") in ["OWNER", "MANAGER"] and inventory_stats %}
+
+<section class="inventory-overview">
+
+    <div class="overview-header">
+        <div>
+            <span class="overview-label">BUSINESS INTELLIGENCE</span>
+            <h2>Inventory Overview</h2>
+            <p>
+                Monitor your stock levels and business
+                performance at a glance.
+            </p>
+        </div>
+        <div class="overview-header-icon">📊</div>
+    </div>
+
+    <div class="overview-cards">
+
+        <div class="overview-card">
+            <div class="overview-card-icon products-icon">📦</div>
+            <p>Total Products</p>
+            <h3>{{ inventory_stats.total_products }}</h3>
+            <small>Active inventory products</small>
+        </div>
+
+        <div class="overview-card">
+            <div class="overview-card-icon value-icon">💰</div>
+            <p>Total Stock Value</p>
+            <h3>${{ "{:,.2f}".format(inventory_stats.stock_value) }}</h3>
+            <small>Value based on unit price</small>
+        </div>
+
+        <div class="overview-card">
+            <div class="overview-card-icon low-icon">⚠️</div>
+            <p>Low Stock Items</p>
+            <h3>{{ inventory_stats.low_stock }}</h3>
+            <small>Products needing restocking</small>
+        </div>
+
+        <div class="overview-card">
+            <div class="overview-card-icon out-icon">🚫</div>
+            <p>Out of Stock</p>
+            <h3>{{ inventory_stats.out_of_stock }}</h3>
+            <small>Products requiring attention</small>
+        </div>
+
+    </div>
+
+
+<!-- STOCK HEALTH OVERVIEW -->
+<div class="stock-health">
+
+    <h3>Stock Health Overview</h3>
+    <p>Current inventory condition</p>
+
+    {% set total = inventory_stats.total_products %}
+    {% set healthy = inventory_stats.healthy_stock %}
+    {% set low = inventory_stats.low_stock %}
+    {% set out = inventory_stats.out_of_stock %}
+
+    <div class="stock-health-bar">
+        {% if total > 0 %}
+        <div class="health-green"
+             style="width: {{ healthy / total * 100 }}%">
+        </div>
+        <div class="health-orange"
+             style="width: {{ low / total * 100 }}%">
+        </div>
+        <div class="health-red"
+             style="width: {{ out / total * 100 }}%">
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- PERCENTAGES ALIGNED BELOW THEIR COLORS -->
+    <div class="stock-health-labels">
+        {% if total > 0 %}
+            {% for count, name, color in [
+                (healthy, 'Healthy', 'green'),
+                (low, 'Low', 'orange'),
+                (out, 'Out', 'red')
+            ] %}
+                {% if count > 0 %}
+                <div class="health-label health-label-{{ color }}"
+                     style="width: {{ count / total * 100 }}%">
+                    {{ "%.0f"|format(count / total * 100) }}% {{ name }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="stock-health-cards">
+        <div class="health-card healthy-card">
+            <h3>{{ healthy }}</h3>
+            <p>Healthy Stock</p>
+        </div>
+
+        <div class="health-card low-card">
+            <h3>{{ low }}</h3>
+            <p>Low Stock</p>
+        </div>
+
+        <div class="health-card out-card">
+            <h3>{{ out }}</h3>
+            <p>Out of Stock</p>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- PRODUCTS NEEDING ATTENTION -->
+<div class="attention-section">
+
+    <div class="attention-summary">
+        <div class="attention-warning-icon">⚠️</div>
+
+        <div class="attention-summary-text">
+            <h3>Products Needing Attention</h3>
+            <p>
+                {{ attention_products | length }}
+                products need restocking
+            </p>
+        </div>
+
+        <button type="button"
+                id="attention-toggle"
+                aria-expanded="false"
+                aria-controls="attention-details">
+            View Products ▼
+        </button>
+    </div>
+
+    <div id="attention-details"
+         class="attention-details"
+         hidden>
+
+        <div class="attention-controls">
+            <label for="attention-filter">
+                Filter by stock status
+            </label>
+
+            <select id="attention-filter">
+                <option value="all">All Products</option>
+                <option value="low">Low Stock</option>
+                <option value="out">Out of Stock</option>
+            </select>
+        </div>
+
+        <div class="attention-table-wrap">
+            <table class="attention-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>SKU</th>
+                        <th>Available</th>
+                        <th>Reorder Level</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="attention-table-body">
+                    {% for product in attention_products %}
+                    <tr data-status="{{ 'out' if product.quantity_in_stock == 0 else 'low' }}">
+                        <td>{{ product.product_name }}</td>
+                        <td>{{ product.sku }}</td>
+                        <td>{{ product.quantity_in_stock }}</td>
+                        <td>{{ product.reorder_level }}</td>
+                        <td>
+                            {% if product.quantity_in_stock == 0 %}
+                            <span class="attention-status status-out">
+                                Out of Stock
+                            </span>
+                            {% else %}
+                            <span class="attention-status status-low">
+                                Low Stock
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <p id="attention-empty" hidden>
+                No products match this filter.
+            </p>
+        </div>
+    </div>
+</div>
+
+
+
+</section>
+
+{% endif %}
+
+
             <!-- FEATURES -->
             <h2 class="section-title">Inventory Management</h2>
 
@@ -451,5 +1278,63 @@
         </main>
     </div>
 </div>
+    </div>
+</div>
+
+<!-- PRODUCTS NEEDING ATTENTION JAVASCRIPT -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const filter = document.getElementById("attention-filter");
+    const toggle = document.getElementById("attention-toggle");
+    const details = document.getElementById("attention-details");
+    const rows = Array.from(
+        document.querySelectorAll("#attention-table-body tr")
+    );
+    const emptyMessage = document.getElementById("attention-empty");
+
+    if (!filter || !toggle || !details || !emptyMessage) return;
+
+    function updateTable() {
+        let matchingCount = 0;
+
+        rows.forEach(row => {
+            const matches =
+                filter.value === "all" ||
+                row.dataset.status === filter.value;
+
+            row.hidden = !matches;
+            row.style.display = matches ? "" : "none";
+
+            if (matches) matchingCount++;
+        });
+
+        emptyMessage.hidden = matchingCount > 0;
+    }
+
+    toggle.addEventListener("click", function () {
+        const opening = details.hidden;
+
+        details.hidden = !opening;
+        toggle.textContent = opening
+            ? "Hide Products ▲"
+            : "View Products ▼";
+
+        toggle.setAttribute(
+            "aria-expanded",
+            String(opening)
+        );
+    });
+
+    filter.addEventListener("change", updateTable);
+
+    details.hidden = true;
+    updateTable();
+});
+</script>
+
+
+</body>
+</html>
 </body>
 </html>
