@@ -866,6 +866,256 @@
     display: none !important;
 }
 
+
+/* USER STORY #12 - NOTIFICATION BELL */
+
+.stock-notification {
+    position: relative;
+    margin-left: auto;
+    margin-right: 12px;
+}
+
+.notification-bell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    background: #f3e8ff;
+    color: #6b21a8;
+    border: 1px solid #e9d5ff;
+    border-radius: 9px;
+    padding: 11px 14px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.notification-bell:hover {
+    background: #e9d5ff;
+}
+
+.notification-count {
+    background: #7e22ce;
+    color: white;
+    border-radius: 20px;
+    padding: 2px 7px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+/* Keep the account button beside the bell */
+.account-dropdown {
+    margin-left: 0;
+}
+
+
+/* COMPACT STOCK NOTIFICATIONS */
+
+/* Smaller dropdown */
+.notification-menu {
+    width: 320px;
+}
+
+/* Header */
+.notification-menu-header {
+    padding: 10px 12px;
+}
+
+.notification-menu-header h3 {
+    font-size: 13px;
+}
+
+.notification-alert-count {
+    font-size: 10px;
+    padding: 3px 7px;
+}
+
+/* Product rows */
+.notification-item {
+    padding: 10px 12px;
+    gap: 8px;
+}
+
+.notification-item-icon {
+    font-size: 14px;
+}
+
+/* Product name */
+.notification-item-content strong {
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+
+/* Quantity and reorder level */
+.notification-item-content p {
+    font-size: 11px;
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+
+/* Low Stock / Out of Stock labels */
+.notification-status {
+    font-size: 10px;
+    padding: 3px 6px;
+}
+
+/* Empty notification message */
+.notification-empty {
+    font-size: 12px;
+    padding: 15px;
+}
+
+
+/* FIX NOTIFICATION DROPDOWN AND MANAGER ALIGNMENT */
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.topbar-title {
+    flex: 1;
+    min-width: 0;
+}
+
+.stock-notification {
+    position: relative;
+    margin-left: auto;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.stock-notification-dropdown {
+    position: relative;
+}
+
+/* Make the dropdown float without expanding the header */
+.stock-notification-dropdown .notification-menu {
+    position: absolute !important;
+    top: calc(100% + 10px);
+    right: 0;
+    left: auto;
+    width: 320px;
+    max-width: calc(100vw - 32px);
+    margin: 0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+}
+
+/* Keep the Manager button in line with the bell */
+.topbar > .account-dropdown {
+    margin-left: 0;
+    flex-shrink: 0;
+}
+
+/* Keep the bell compact */
+.stock-notification-dropdown > .notification-bell {
+    width: auto;
+    min-width: 75px;
+    padding: 10px 12px;
+}
+
+/* Final notification dropdown refinements */
+
+.notification-menu-header {
+    padding: 10px 12px;
+}
+
+.notification-list {
+    max-height: 280px;
+}
+
+.notification-item {
+    padding: 9px 12px;
+    gap: 8px;
+}
+
+.notification-item-content strong {
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.notification-item-content p {
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+
+.notification-status {
+    font-size: 10px;
+    padding: 2px 6px;
+}
+
+
+/* USER STORY #12 - REMOVE EXCESS NOTIFICATION SPACING */
+
+.stock-notification-dropdown .notification-menu {
+    width: 300px;
+    padding: 0 !important;
+}
+
+.notification-menu-header {
+    padding: 10px 12px !important;
+    margin: 0 !important;
+}
+
+.notification-menu-header h3 {
+    margin: 0 !important;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.notification-alert-count {
+    margin: 0 !important;
+    font-size: 10px;
+}
+
+.notification-list {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 8px 12px !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+}
+
+.notification-item-icon {
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.notification-item-content {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.notification-item-content strong {
+    margin: 0 0 2px !important;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.notification-item-content p {
+    margin: 2px 0 4px !important;
+    font-size: 10px;
+    line-height: 1.3;
+}
+
+.notification-status {
+    margin: 0 !important;
+    padding: 2px 5px !important;
+    font-size: 10px;
+}
+
+
+
     </style>
 </head>
 
@@ -953,6 +1203,87 @@
             {{ session.get("role", "User") | title }} Dashboard
         </div>
     </div>
+
+
+<!-- LOW STOCK NOTIFICATION BELL -->
+{% if session.get("role") in ["OWNER", "MANAGER"] %}
+<!-- LOW STOCK NOTIFICATION BELL -->
+{% if session.get("role") in ["OWNER", "MANAGER"] %}
+
+<div class="stock-notification">
+
+    <details class="stock-notification-dropdown">
+
+        <summary class="notification-bell">
+            🔔
+            <span class="notification-count">
+                {{ attention_products | length }}
+            </span>
+        </summary>
+
+        
+<div class="notification-menu">
+
+    <div class="notification-menu-header">
+        <h3>Stock Notifications</h3>
+        <span class="notification-alert-count">
+            {{ attention_products | length }} alerts
+        </span>
+    </div>
+
+    <div class="notification-list">
+        {% for product in attention_products %}
+
+        <div class="notification-item">
+
+            <span class="notification-item-icon">
+                {% if product.quantity_in_stock == 0 %}
+                    🔴
+                {% else %}
+                    ⚠️
+                {% endif %}
+            </span>
+
+            <div class="notification-item-content">
+                <strong>{{ product.product_name }}</strong>
+
+                <p>
+                    {{ product.quantity_in_stock }} units remaining
+                    · Reorder level: {{ product.reorder_level }}
+                </p>
+
+                {% if product.quantity_in_stock == 0 %}
+                    <span class="notification-status status-out">
+                        Out of Stock
+                    </span>
+                {% else %}
+                    <span class="notification-status status-low">
+                        Low Stock
+                    </span>
+                {% endif %}
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <div class="notification-empty">
+            ✅ All products have healthy stock levels.
+        </div>
+
+        {% endfor %}
+    </div>
+
+</div>
+
+
+    </details>
+
+</div>
+
+{% endif %}
+{% endif %}
+
 
     <details class="account-dropdown">
         <summary>
