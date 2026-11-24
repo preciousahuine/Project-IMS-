@@ -1180,13 +1180,12 @@
     Stock Audit Log
 </a>
 {% endif %}
-            <span class="nav-link disabled">
-                <span class="nav-icon">▤</span>
-
-
-
-                Reports
-            </span>
+            {% if session.get("role") in ("OWNER", "MANAGER") %}
+<a href="{{ url_for('reports') }}" class="nav-link">
+    <span class="nav-icon">▤</span>
+    Reports
+</a>
+{% endif %}
         </nav>
     </aside>
 
@@ -1602,7 +1601,10 @@
                     <div class="feature-icon">📊</div>
                     <h3>Inventory Reports</h3>
                     <p>View stock levels and sales performance.</p>
-                    <span class="coming-soon">Coming Soon</span>
+                    <a href="{{ url_for('reports') }}" class="report-btn"
+   style="display:inline-block; padding:10px 18px; background:#19375b; color:white; border-radius:7px; text-decoration:none; font-weight:600;">
+    View Reports →
+</a>
                 </div>
 
             </div>
