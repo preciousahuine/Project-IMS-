@@ -1,0 +1,559 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMS - Reports</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6fa;
+            color: #243247;
+        }
+
+        .header {
+            background: #19375b;
+            color: white;
+            padding: 22px 30px;
+        }
+
+        .header h1 {
+            margin: 0 0 6px;
+            font-size: 24px;
+        }
+
+        .header p {
+            margin: 0;
+            font-size: 14px;
+            color: #dce6f2;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #19375b;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .panel {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+            margin-bottom: 22px;
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            font-size: 19px;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #d4dce7;
+            border-radius: 7px;
+            font-size: 14px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        button {
+            padding: 11px 18px;
+            border: none;
+            border-radius: 7px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .primary {
+            background: #19375b;
+            color: white;
+        }
+
+        .secondary {
+            background: #f0ebfa;
+            color: #663399;
+        }
+
+        .preview {
+            text-align: center;
+            padding: 40px 15px;
+            color: #65748b;
+            border: 1px dashed #ccd5e2;
+            border-radius: 9px;
+        }
+
+        @media (max-width: 700px) {
+            .filters {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <h1>Sales & Inventory Reports</h1>
+        <p>Generate, review, and download inventory reports</p>
+    </header>
+
+    <main class="container">
+        <a class="back-link" href="{{ url_for('dashboard') }}">
+            &larr; Back to Dashboard
+        </a>
+
+        <section class="panel">
+            <h2>Generate Report</h2>
+
+           
+<form method="GET" action="{{ url_for('reports') }}">
+
+    <div class="filters">
+        <div>
+            <label for="report_type">Report Type</label>
+            <select id="report_type" name="report_type">
+                <option value="sales"
+                    {% if report_type == 'sales' %}selected{% endif %}>
+                    Sales Report
+                </option>
+                <option value="purchases"
+                    {% if report_type == 'purchases' %}selected{% endif %}>
+                    Purchase Report
+                </option>
+                <option value="stock"
+                    {% if report_type == 'stock' %}selected{% endif %}>
+                    Stock Level Report
+                </option>
+            </select>
+        </div>
+
+        <div>
+            <label for="start_date">Start Date</label>
+            <input type="date"
+                   id="start_date"
+                   name="start_date"
+                   value="{{ start_date }}"
+                   required>
+        </div>
+
+        <div>
+            <label for="end_date">End Date</label>
+            <input type="date"
+                   id="end_date"
+                   name="end_date"
+                   value="{{ end_date }}"
+                   required>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="primary" type="submit">
+            Generate Report
+        </button>
+
+        
+<button class="secondary"
+        type="submit"
+        name="download"
+        value="pdf">
+    Download PDF
+</button>
+
+
+       
+<button class="secondary"
+        type="submit"
+        name="download"
+        value="csv">
+    Download CSV
+</button>
+
+    </div>
+
+</form>
+
+        </section>
+
+        
+<section class="panel">
+    <h2>Report Preview</h2>
+
+    {% if error %}
+        <p style="color:#b91c1c;">{{ error }}</p>
+
+    {% elif sales_summary is not none %}
+
+        <h3>Sales Report</h3>
+        <p>
+            Report Period: {{ start_date }} to {{ end_date }}
+        </p>
+
+        <!-- Sales Summary -->
+        <div class="filters" style="margin-bottom:25px;">
+
+            <div class="panel" style="background:#f0f4f9;">
+                <strong>Total Revenue</strong>
+                <h2>
+                    ${{ "{:,.2f}".format(sales_summary.revenue) }}
+                </h2>
+            </div>
+
+            <div class="panel" style="background:#f0f4f9;">
+                <strong>Units Sold</strong>
+                <h2>{{ sales_summary.units_sold }}</h2>
+            </div>
+
+            <div class="panel" style="background:#f0f4f9;">
+                <strong>Transactions</strong>
+                <h2>{{ sales_summary.transactions }}</h2>
+            </div>
+
+        </div>
+
+        <!-- Sales Transactions Table -->
+        <div style="overflow-x:auto;">
+
+            <table style="width:100%; border-collapse:collapse;">
+
+                <thead>
+                    <tr style="background:#19375b; color:white;">
+                        <th style="padding:12px;">Date</th>
+                        <th style="padding:12px;">Product</th>
+                        <th style="padding:12px;">Quantity</th>
+                        <th style="padding:12px;">Unit Price</th>
+                        <th style="padding:12px;">Total</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for sale in sales_data %}
+                    <tr style="border-bottom:1px solid #ddd;">
+
+                        <td style="padding:12px;">
+                            {{ sale.sale_date.strftime('%Y-%m-%d') }}
+                        </td>
+
+                        <td style="padding:12px;">
+                            {{ sale.product_name }}
+                        </td>
+
+                        <td style="padding:12px; text-align:center;">
+                            {{ sale.quantity_sold }}
+                        </td>
+
+                        <td style="padding:12px; text-align:right;">
+                            ${{ "{:,.2f}".format(sale.unit_price) }}
+                        </td>
+
+                        <td style="padding:12px; text-align:right;">
+                            ${{ "{:,.2f}".format(sale.total_amount) }}
+                        </td>
+
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5"
+                            style="padding:20px; text-align:center;">
+                            No sales found for this date range.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    
+    {% elif purchase_summary is not none %}
+
+        <h3>Purchase Report</h3>
+        <p>
+            Report Period: {{ start_date }} to {{ end_date }}
+        </p>
+
+        <!-- Purchase Summary -->
+        <div class="filters" style="margin-bottom:25px;">
+
+            <div class="panel" style="background:#f0f4f9;">
+                <strong>Total Receipts</strong>
+                <h2>{{ purchase_summary.receipts }}</h2>
+            </div>
+
+            <div class="panel" style="background:#f0f4f9;">
+                <strong>Units Received</strong>
+                <h2>{{ purchase_summary.units_received }}</h2>
+            </div>
+
+            <div class="panel" style="background:#f0f4f9;">
+                <strong>Unique Suppliers</strong>
+                <h2>{{ purchase_summary.suppliers }}</h2>
+            </div>
+
+        </div>
+
+        <!-- Purchase Transactions Table -->
+        <div style="overflow-x:auto;">
+
+            <table style="width:100%; border-collapse:collapse;">
+
+                <thead>
+                    <tr style="background:#19375b; color:white;">
+                        <th style="padding:12px;">Date</th>
+                        <th style="padding:12px;">Product</th>
+                        <th style="padding:12px;">Supplier</th>
+                        <th style="padding:12px;">Quantity Received</th>
+                        <th style="padding:12px;">Received By</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for purchase in purchase_data %}
+                    <tr style="border-bottom:1px solid #ddd;">
+
+                        <td style="padding:12px;">
+                            {{ purchase.received_date.strftime('%Y-%m-%d') }}
+                        </td>
+
+                        <td style="padding:12px;">
+                            {{ purchase.product_name }}
+                        </td>
+
+                        <td style="padding:12px;">
+                            {{ purchase.supplier_name }}
+                        </td>
+
+                        <td style="padding:12px; text-align:center;">
+                            {{ purchase.quantity_received }}
+                        </td>
+
+                        <td style="padding:12px;">
+                            {{ purchase.received_by or 'Unknown' }}
+                        </td>
+
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5"
+                            style="padding:20px; text-align:center;">
+                            No purchase records found for this date range.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    
+    {% elif stock_summary is not none %}
+
+        <h3>Stock Level Report</h3>
+        <p>Current Inventory Snapshot: {{ report_date }}</p>
+
+        <!-- Stock Summary -->
+        <div class="filters" style="margin-bottom:15px;">
+
+            <div class="panel" style="background:#f0f4f9;">
+                <strong>Total Products</strong>
+                <h2>{{ stock_summary.total_products }}</h2>
+            </div>
+
+            <div class="panel" style="background:#f0f4f9;">
+                <strong>Total Units in Stock</strong>
+                <h2>{{ stock_summary.total_units }}</h2>
+            </div>
+
+            <div class="panel" style="background:#f0f4f9;">
+                <strong>Total Stock Value</strong>
+                <h2>
+                    ${{ "{:,.2f}".format(stock_summary.stock_value) }}
+                </h2>
+            </div>
+
+            <div class="panel" style="background:#ecfdf5;">
+                <strong>Healthy Stock</strong>
+                <h2 style="color:#15803d;">
+                    {{ stock_summary.healthy_stock }}
+                </h2>
+            </div>
+
+            <div class="panel" style="background:#fff7ed;">
+                <strong>Low Stock</strong>
+                <h2 style="color:#d97706;">
+                    {{ stock_summary.low_stock }}
+                </h2>
+            </div>
+
+            <div class="panel" style="background:#fef2f2;">
+                <strong>Out of Stock</strong>
+                <h2 style="color:#dc2626;">
+                    {{ stock_summary.out_of_stock }}
+                </h2>
+            </div>
+
+        </div>
+
+        <p style="color:#65748b; font-size:13px;">
+            Stock value is calculated using the current selling price.
+        </p>
+
+        <!-- Stock Level Table -->
+        <div style="overflow-x:auto;">
+
+            <table style="width:100%; border-collapse:collapse;">
+
+                <thead>
+                    <tr style="background:#19375b; color:white;">
+                        <th style="padding:12px;">Product</th>
+                        <th style="padding:12px;">SKU</th>
+                        <th style="padding:12px;">Category</th>
+                        <th style="padding:12px;">Unit Price</th>
+                        <th style="padding:12px;">Quantity</th>
+                        <th style="padding:12px;">Reorder Level</th>
+                        <th style="padding:12px;">Stock Value</th>
+                        <th style="padding:12px;">Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for stock in stock_data %}
+                    <tr style="border-bottom:1px solid #ddd;">
+
+                        <td style="padding:12px;">
+                            {{ stock.product_name }}
+                        </td>
+
+                        <td style="padding:12px;">
+                            {{ stock.sku }}
+                        </td>
+
+                        <td style="padding:12px;">
+                            {{ stock.category or 'Uncategorized' }}
+                        </td>
+
+                        <td style="padding:12px; text-align:right;">
+                            ${{ "{:,.2f}".format(stock.unit_price) }}
+                        </td>
+
+                        <td style="padding:12px; text-align:center;">
+                            {{ stock.quantity_in_stock }}
+                        </td>
+
+                        <td style="padding:12px; text-align:center;">
+                            {{ stock.reorder_level }}
+                        </td>
+
+                        <td style="padding:12px; text-align:right;">
+                            ${{ "{:,.2f}".format(stock.stock_value) }}
+                        </td>
+
+                        <td style="padding:12px; text-align:center;">
+
+                            {% if stock.stock_status == 'Healthy' %}
+                                <span style="background:#dcfce7; color:#15803d; padding:5px 9px; border-radius:6px; font-weight:bold;">
+                                    Healthy
+                                </span>
+
+                            {% elif stock.stock_status == 'Low Stock' %}
+                                <span style="background:#ffedd5; color:#c2410c; padding:5px 9px; border-radius:6px; font-weight:bold;">
+                                    Low Stock
+                                </span>
+
+                            {% else %}
+                                <span style="background:#fee2e2; color:#b91c1c; padding:5px 9px; border-radius:6px; font-weight:bold;">
+                                    Out of Stock
+                                </span>
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8"
+                            style="padding:20px; text-align:center;">
+                            No active inventory products found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    {% else %}
+        <div class="preview">
+            Select a report type and click Generate Report.
+            A date range is required for Sales and Purchase Reports.
+        </div>
+    {% endif %}
+
+
+
+</section>
+
+    
+    </main>
+
+    <script>
+        const reportType = document.getElementById("report_type");
+        const startDate = document.getElementById("start_date");
+        const endDate = document.getElementById("end_date");
+
+        function updateDateFields() {
+            const isStockReport = reportType.value === "stock";
+
+            startDate.disabled = isStockReport;
+            endDate.disabled = isStockReport;
+
+            startDate.required = !isStockReport;
+            endDate.required = !isStockReport;
+
+            startDate.style.backgroundColor =
+                isStockReport ? "#e9edf3" : "#ffffff";
+
+            endDate.style.backgroundColor =
+                isStockReport ? "#e9edf3" : "#ffffff";
+        }
+
+        reportType.addEventListener("change", updateDateFields);
+
+        updateDateFields();
+    </script>
+
+</body>
+</html>
